@@ -3,7 +3,7 @@
 @section('content')
     <div class="space-y-6">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+            <div class="space-y-1">
                 <h1 class="text-3xl font-semibold">Shopping Cart</h1>
                 <p class="text-base-content/70">Session-based cart storage is already wired to authenticated and guest flows.</p>
             </div>
@@ -12,7 +12,7 @@
 
         <div class="grid gap-6 lg:grid-cols-[1fr,320px]">
             <div class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body p-0 sm:p-0">
                     <div class="overflow-x-auto">
                         <table class="table table-zebra">
                             <thead>
@@ -65,7 +65,7 @@
             </div>
 
             <div class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body gap-4">
                     <h2 class="card-title">Order Summary</h2>
                     <div class="space-y-3 text-sm">
                         <div class="flex items-center justify-between">
@@ -76,13 +76,13 @@
                             <span>Discount</span>
                             <span>Rp {{ number_format($cart->discount_total, 0, ',', '.') }}</span>
                         </div>
-                        <div class="divider my-1"></div>
+                        <div class="divider my-0"></div>
                         <div class="flex items-center justify-between text-base font-semibold">
                             <span>Total</span>
                             <span>Rp {{ number_format($cart->total, 0, ',', '.') }}</span>
                         </div>
                     </div>
-                    <div class="card-actions mt-4 justify-end">
+                    <div class="card-actions justify-end pt-2">
                         @if ($cart->items->isEmpty())
                             <button class="btn btn-primary" disabled>Proceed to Checkout</button>
                         @else

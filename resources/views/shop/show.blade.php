@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="space-y-8">
+    <div class="space-y-6">
         <div class="breadcrumbs text-sm">
             <ul>
                 <li><a href="{{ route('home') }}">Home</a></li>
@@ -10,9 +10,9 @@
             </ul>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[1fr,1.1fr]">
+        <div class="grid gap-6 xl:grid-cols-[1fr,1.1fr]">
             <div class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body gap-4">
                     <h1 class="card-title text-3xl">{{ $product->name }}</h1>
                     <div class="flex flex-wrap gap-2">
                         <span class="badge badge-outline">{{ $product->sku }}</span>
@@ -24,7 +24,7 @@
                     <div class="text-4xl font-bold text-primary">
                         Rp {{ number_format($product->price, 0, ',', '.') }}
                     </div>
-                    <div class="stats stats-vertical border border-base-300 bg-base-200 shadow-none lg:stats-horizontal">
+                    <div class="stats stats-vertical border border-base-300 bg-base-200 shadow-none sm:stats-horizontal">
                         <div class="stat px-4 py-3">
                             <div class="stat-title">Stock</div>
                             <div class="stat-value text-lg">{{ $product->stock }}</div>
@@ -54,14 +54,14 @@
 
             <div class="space-y-6">
                 <div class="card border border-base-300 bg-base-100 shadow-sm">
-                    <div class="card-body">
+                    <div class="card-body gap-3">
                         <h2 class="card-title">Description</h2>
                         <p class="text-base-content/70">{{ $product->description ?: 'Detailed product content can be managed from the CMS admin.' }}</p>
                     </div>
                 </div>
 
                 <div class="card border border-base-300 bg-base-100 shadow-sm">
-                    <div class="card-body">
+                    <div class="card-body gap-3">
                         <h2 class="card-title">Specifications</h2>
                         @if (! empty($product->specifications))
                             <div class="overflow-x-auto">
@@ -88,10 +88,10 @@
 
         <div class="space-y-4">
             <h2 class="text-2xl font-semibold">Related Products</h2>
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
                 @forelse ($relatedProducts as $related)
                     <div class="card border border-base-300 bg-base-100 shadow-sm">
-                        <div class="card-body">
+                        <div class="card-body gap-3">
                             <h3 class="card-title text-lg">{{ $related->name }}</h3>
                             <p class="text-sm text-base-content/70">{{ $related->short_description }}</p>
                             <div class="card-actions justify-between pt-2">

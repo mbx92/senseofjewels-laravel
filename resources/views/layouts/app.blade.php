@@ -39,7 +39,7 @@
                             <label tabindex="0" class="btn btn-outline btn-sm">
                                 {{ auth()->user()->name }}
                             </label>
-                            <ul tabindex="0" class="menu dropdown-content z-[1] mt-3 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
+                            <ul tabindex="0" class="menu dropdown-content z-10 mt-3 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                 <li><a href="{{ route('dashboard') }}">Customer Dashboard</a></li>
                                 <li><a href="{{ route('profile.edit') }}">Profile</a></li>
                                 @if ($isAdmin)
@@ -68,7 +68,7 @@
                 </header>
             @endisset
 
-            <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <main class="mx-auto flex w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
                 @if (session('status'))
                     <div role="alert" class="alert alert-success mb-6">
                         <span>{{ session('status') }}</span>
@@ -89,7 +89,7 @@
             </main>
 
             <footer class="border-t border-base-300 bg-base-100">
-                <div class="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
+                <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
                     <div>
                         <p class="footer-title">Sense of Jewels</p>
                         <p class="text-sm text-base-content/70">

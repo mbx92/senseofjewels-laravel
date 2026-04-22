@@ -3,103 +3,121 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Voucher;
+use App\Services\CartService;
+use App\Services\DiscountService;
+use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
+    public function __construct(
+        protected CartService     $cartService,
+        protected OrderService    $orderService,
+        protected DiscountService $discountService,
+    ) {}
+
     public function index(Request $request): View
     {
-        $cart = Cart::query()
-            ->with('items.product')
-            ->where('session_id', $request->session()->getId())
-            ->first();
+        $cart = $this->cartService->getCart();
+
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('cart.index')
+                ->with('error', 'Keranjang Anda kosong.');
+        }
 
         return view('checkout.index', compact('cart'));
+    }
+
+    public function applyVoucher(Request $request): JsonResponse
+    {
+        $request->validate(['code' => ['required', 'string']]);
+
+        $cart   = $this->cartService->getCart();
+        $result = $this->discountService->validateVoucher(
+            $request->code,
+            $request->user()?->id,
+            $cart->subtotal,
+        );
+
+        if (! $result['valid']) {
+            return response()->json(['valid' => false, 'message' => $result['message']], 422);
+        }
+
+        session(['checkout_voucher_id' => $result['voucher']->id]);
+
+        return response()->json([
+            'valid'           => true,
+            'message'         => $result['message'],
+            'discount_amount' => $result['discount_amount'],
+            'discount_fmt'    => 'Rp ' . number_format($result['discount_amount'], 0, ',', '.'),
+            'total'           => $cart->subtotal - $result['discount_amount'],
+            'total_fmt'       => 'Rp ' . number_format($cart->subtotal - $result['discount_amount'], 0, ',', '.'),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'customer_name' => ['required', 'string', 'max:255'],
-            'customer_email' => ['required', 'email', 'max:255'],
-            'customer_phone' => ['nullable', 'string', 'max:50'],
-            'shipping_address.line_1' => ['required', 'string', 'max:255'],
-            'shipping_address.city' => ['required', 'string', 'max:255'],
-            'shipping_address.province' => ['required', 'string', 'max:255'],
+            'customer_name'                => ['required', 'string', 'max:255'],
+            'customer_email'               => ['required', 'email', 'max:255'],
+            'customer_phone'               => ['nullable', 'string', 'max:50'],
+            'shipping_address.line_1'      => ['required', 'string', 'max:255'],
+            'shipping_address.city'        => ['required', 'string', 'max:255'],
+            'shipping_address.province'    => ['required', 'string', 'max:255'],
             'shipping_address.postal_code' => ['required', 'string', 'max:20'],
-            'shipping_address.country' => ['required', 'string', 'max:100'],
-            'notes' => ['nullable', 'string'],
+            'shipping_address.country'     => ['nullable', 'string', 'max:100'],
+            'voucher_code'                 => ['nullable', 'string', 'max:50'],
+            'notes'                        => ['nullable', 'string'],
         ]);
 
-        $cart = Cart::query()
-            ->with('items.product')
-            ->where('session_id', $request->session()->getId())
-            ->first();
+        $cart = $this->cartService->getCart();
 
-        if (! $cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->withErrors([
-                'cart' => 'Your cart is empty.',
-            ]);
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        $order = Order::query()->create([
-            'user_id' => $request->user()?->id,
-            'order_number' => 'SOJ-'.Str::upper(Str::random(10)),
-            'status' => 'pending',
-            'fulfillment_status' => 'unfulfilled',
-            'payment_status' => 'pending',
-            'customer_name' => $validated['customer_name'],
-            'customer_email' => $validated['customer_email'],
-            'customer_phone' => $validated['customer_phone'] ?? null,
-            'shipping_address' => $validated['shipping_address'],
-            'billing_address' => $validated['shipping_address'],
-            'notes' => $validated['notes'] ?? null,
-            'subtotal' => $cart->subtotal,
-            'discount_total' => $cart->discount_total,
-            'shipping_total' => 0,
-            'tax_total' => 0,
-            'total' => $cart->total,
-            'currency' => $cart->currency,
-            'placed_at' => now(),
-        ]);
-
-        foreach ($cart->items as $item) {
-            $order->items()->create([
-                'product_id' => $item->product_id,
-                'product_name' => $item->product_name,
-                'product_sku' => $item->product_sku,
-                'quantity' => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'discount_total' => 0,
-                'tax_total' => 0,
-                'total' => $item->line_total,
-            ]);
+        // Resolve voucher
+        $voucherId = null;
+        if (! empty($validated['voucher_code'])) {
+            $voucher = Voucher::query()->where('code', strtoupper($validated['voucher_code']))->first();
+            $voucherId = $voucher?->id;
+        } elseif (session('checkout_voucher_id')) {
+            $voucherId = session('checkout_voucher_id');
         }
 
+        $order = $this->orderService->create(
+            userId: $request->user()?->id,
+            cart: $cart,
+            customerData: [
+                'name'  => $validated['customer_name'],
+                'email' => $validated['customer_email'],
+                'phone' => $validated['customer_phone'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ],
+            address: array_merge($validated['shipping_address'], ['country' => $validated['shipping_address']['country'] ?? 'Indonesia']),
+            voucherId: $voucherId,
+        );
+
+        // Scaffold payment record (Midtrans connected in Prompt 4)
         Payment::query()->create([
             'order_id' => $order->id,
             'provider' => 'midtrans',
-            'amount' => $order->total,
+            'amount'   => $order->total,
             'currency' => $order->currency,
-            'status' => 'pending',
-            'payload' => [
-                'integration_status' => 'placeholder',
-                'message' => 'Midtrans Snap integration will be connected in the payment module phase.',
-            ],
+            'status'   => 'pending',
+            'payload'  => ['status' => 'awaiting_snap_token'],
         ]);
 
-        $cart->items()->delete();
-        $cart->update([
-            'subtotal' => 0,
-            'discount_total' => 0,
-            'total' => 0,
-        ]);
+        // Clear cart
+        $this->cartService->clear();
+        session()->forget('checkout_voucher_id');
 
-        return redirect()->route('orders.track', $order->order_number)->with('status', 'Order created successfully.');
+        return redirect()->route('orders.show', $order->order_number)
+            ->with('status', 'Order berhasil dibuat! Silakan selesaikan pembayaran.');
     }
 }

@@ -3,16 +3,16 @@
 @section('content')
     <div class="space-y-6">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+            <div class="space-y-1">
                 <h1 class="text-3xl font-semibold">Shop Catalog</h1>
                 <p class="text-base-content/70">Browse categories, filter products, and add items into the session-based cart.</p>
             </div>
             <a href="{{ route('cart.index') }}" class="btn btn-primary btn-sm">Open Cart</a>
         </div>
 
-        <div class="grid gap-6 lg:grid-cols-[280px,1fr]">
+        <div class="grid gap-6 xl:grid-cols-[280px,1fr]">
             <aside class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body gap-4">
                     <h2 class="card-title">Filters</h2>
                     <form method="GET" action="{{ route('shop.index') }}" class="space-y-4">
                         <label class="form-control w-full">
@@ -36,7 +36,7 @@
                             </select>
                         </label>
 
-                        <div class="card-actions justify-end">
+                        <div class="card-actions justify-end pt-1">
                             <a href="{{ route('shop.index') }}" class="btn btn-ghost">Reset</a>
                             <button type="submit" class="btn btn-primary">Apply</button>
                         </div>
@@ -44,10 +44,10 @@
                 </div>
             </aside>
 
-            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
                 @forelse ($products as $product)
                     <div class="card border border-base-300 bg-base-100 shadow-sm">
-                        <div class="card-body">
+                        <div class="card-body gap-4">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <h2 class="card-title">{{ $product->name }}</h2>
@@ -66,11 +66,11 @@
                                 {{ $product->short_description ?? \Illuminate\Support\Str::limit(strip_tags($product->description), 100) }}
                             </p>
 
-                            <div class="mt-2 text-2xl font-semibold text-primary">
+                            <div class="text-2xl font-semibold text-primary">
                                 Rp {{ number_format($product->price, 0, ',', '.') }}
                             </div>
 
-                            <div class="card-actions justify-between pt-3">
+                            <div class="card-actions justify-between pt-1">
                                 <a href="{{ route('shop.show', $product->slug) }}" class="btn btn-ghost btn-sm">Details</a>
                                 <form method="POST" action="{{ route('cart.store') }}">
                                     @csrf

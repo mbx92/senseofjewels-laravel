@@ -204,13 +204,41 @@
 
             <div class="card border border-base-300 bg-base-100 shadow-sm">
                 <div class="card-body">
-                    <h3 class="card-title">Quick Inquiry</h3>
-                    <div class="grid gap-3">
-                        <input type="text" placeholder="Your name" class="input input-bordered w-full" disabled />
-                        <input type="email" placeholder="Your email" class="input input-bordered w-full" disabled />
-                        <textarea class="textarea textarea-bordered min-h-32 w-full" disabled placeholder="Message"></textarea>
-                        <button class="btn btn-primary" disabled>Contact module will be added in CMS phase</button>
-                    </div>
+                    <h3 class="card-title">Kirim Pesan</h3>
+                    <form action="{{ route('contact.store') }}" method="POST" class="grid gap-3">
+                        @csrf
+                        <div class="form-control">
+                            <input type="text" name="name" value="{{ old('name') }}"
+                                placeholder="Nama Anda" class="input input-bordered w-full @error('name') input-error @enderror" required>
+                            @error('name')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                            @enderror
+                        </div>
+                        <div class="form-control">
+                            <input type="email" name="email" value="{{ old('email') }}"
+                                placeholder="Email Anda" class="input input-bordered w-full @error('email') input-error @enderror" required>
+                            @error('email')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                            @enderror
+                        </div>
+                        <div class="form-control">
+                            <input type="text" name="subject" value="{{ old('subject') }}"
+                                placeholder="Subjek" class="input input-bordered w-full @error('subject') input-error @enderror" required>
+                            @error('subject')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                            @enderror
+                        </div>
+                        <div class="form-control">
+                            <textarea name="message" rows="4"
+                                placeholder="Pesan Anda..."
+                                class="textarea textarea-bordered min-h-32 w-full @error('message') textarea-error @enderror"
+                                required>{{ old('message') }}</textarea>
+                            @error('message')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn btn-primary">Kirim Pesan</button>
+                    </form>
                 </div>
             </div>
         </section>
