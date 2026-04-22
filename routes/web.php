@@ -4,13 +4,16 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DiscountController as AdminDiscountController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PortfolioController as AdminPortfolioController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\RoleController as AdminRoleController;
 use App\Http\Controllers\Admin\SectionController as AdminSectionController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CartController;
@@ -19,12 +22,17 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderTrackingController;
+use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+// Customer preference routes (no auth required — session-only)
+Route::post('/preferences/locale', [PreferenceController::class, 'setLocale'])->name('preferences.locale');
+Route::post('/preferences/currency', [PreferenceController::class, 'setCurrency'])->name('preferences.currency');
 
 // Shop — category route before {slug} to avoid conflict
 Route::get('/shop/category/{slug}', [ShopController::class, 'index'])->name('shop.category');
@@ -94,6 +102,30 @@ Route::middleware(['auth', 'role:super-admin|admin|editor'])->prefix('admin')->n
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+
+    // System — Users & Roles (super-admin only)
+    Route::middleware('role:super-admin')->group(function () {
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+        Route::get('roles', [AdminRoleController::class, 'index'])->name('roles.index');
+        Route::post('roles', [AdminRoleController::class, 'store'])->name('roles.store');
+        Route::put('roles/{role}', [AdminRoleController::class, 'update'])->name('roles.update');
+        Route::delete('roles/{role}', [AdminRoleController::class, 'destroy'])->name('roles.destroy');
+    });
+
+    // System — Settings
+    Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+    // System — Media Library
+    Route::get('media/json', [AdminMediaController::class, 'json'])->name('media.json');
+    Route::get('media', [AdminMediaController::class, 'index'])->name('media.index');
+    Route::post('media', [AdminMediaController::class, 'store'])->name('media.store');
+    Route::put('media/{medium}', [AdminMediaController::class, 'update'])->name('media.update');
+    Route::delete('media/{medium}', [AdminMediaController::class, 'destroy'])->name('media.destroy');
 });
 
 Route::middleware('auth')->group(function () {

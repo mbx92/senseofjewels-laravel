@@ -1,95 +1,89 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="space-y-6">
-        <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div class="space-y-1">
-                <h1 class="text-3xl font-semibold">Shop Catalog</h1>
-                <p class="text-base-content/70">Browse categories, filter products, and add items into the session-based cart.</p>
-            </div>
-            <a href="{{ route('cart.index') }}" class="btn btn-primary btn-sm">Open Cart</a>
-        </div>
-
-        <div class="grid gap-6 xl:grid-cols-[280px,1fr]">
-            <aside class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body gap-4">
-                    <h2 class="card-title">Filters</h2>
-                    <form method="GET" action="{{ route('shop.index') }}" class="space-y-4">
-                        <label class="form-control w-full">
-                            <div class="label">
-                                <span class="label-text">Search</span>
-                            </div>
-                            <input type="text" name="search" value="{{ request('search') }}" class="input input-bordered w-full" placeholder="Product name or SKU">
-                        </label>
-
-                        <label class="form-control w-full">
-                            <div class="label">
-                                <span class="label-text">Category</span>
-                            </div>
-                            <select name="category" class="select select-bordered w-full">
-                                <option value="">All categories</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->slug }}" @selected(request('category') === $category->slug)>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </label>
-
-                        <div class="card-actions justify-end pt-1">
-                            <a href="{{ route('shop.index') }}" class="btn btn-ghost">Reset</a>
-                            <button type="submit" class="btn btn-primary">Apply</button>
-                        </div>
-                    </form>
-                </div>
-            </aside>
-
-            <div class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
-                @forelse ($products as $product)
-                    <div class="card border border-base-300 bg-base-100 shadow-sm">
-                        <div class="card-body gap-4">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <h2 class="card-title">{{ $product->name }}</h2>
-                                    <p class="text-sm text-base-content/60">{{ $product->sku }}</p>
-                                </div>
-                                @if ($product->is_featured)
-                                    <span class="badge badge-primary">Featured</span>
-                                @endif
-                            </div>
-
-                            @if ($product->category)
-                                <div class="badge badge-outline">{{ $product->category->name }}</div>
-                            @endif
-
-                            <p class="text-sm text-base-content/70">
-                                {{ $product->short_description ?? \Illuminate\Support\Str::limit(strip_tags($product->description), 100) }}
-                            </p>
-
-                            <div class="text-2xl font-semibold text-primary">
-                                Rp {{ number_format($product->price, 0, ',', '.') }}
-                            </div>
-
-                            <div class="card-actions justify-between pt-1">
-                                <a href="{{ route('shop.show', $product->slug) }}" class="btn btn-ghost btn-sm">Details</a>
-                                <form method="POST" action="{{ route('cart.store') }}">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="alert lg:col-span-2 xl:col-span-3">
-                        <span>No products matched your filters.</span>
-                    </div>
-                @endforelse
-            </div>
-        </div>
-
-        <div>
-            {{ $products->links() }}
-        </div>
+<div class="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1400px] pb-40 md:pb-56">
+    <!-- Header (Chic Minimal) -->
+    <div class="py-12 md:py-20 text-center border-b border-base-300 mb-12">
+        <h1 class="display-font text-5xl md:text-6xl text-base-content mb-4 tracking-wide">Ready to Wear</h1>
+        <p class="text-base-content/60 max-w-lg mx-auto text-lg font-light">Fine jewelry for your daily narrative. Explore our complete collection of modern heirlooms.</p>
     </div>
+
+    <!-- Shop Tools (Horizontal Glamora Style) -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-sm uppercase tracking-widest">
+        <div class="flex items-center gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 no-scrollbar whitespace-nowrap text-xs font-semibold">
+            <a href="{{ route('shop.index') }}" class="{{ !request('category') ? 'text-base-content border-b border-base-content' : 'text-base-content/50 hover:text-base-content' }} pb-1 transition-colors">All</a>
+            @foreach ($categories as $category)
+                <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="{{ request('category') === $category->slug ? 'text-base-content border-b border-base-content' : 'text-base-content/50 hover:text-base-content' }} pb-1 transition-colors">{{ $category->name }}</a>
+            @endforeach
+        </div>
+
+        <form method="GET" action="{{ route('shop.index') }}" class="w-full md:w-64">
+            @if(request('category'))
+                <input type="hidden" name="category" value="{{ request('category') }}">
+            @endif
+            <div class="relative">
+                <input type="text" name="search" value="{{ request('search') }}" class="w-full border-b border-base-content/20 bg-transparent py-2 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-base-content transition-colors" placeholder="SEARCH COLLECTION...">
+                <button type="submit" class="absolute right-0 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Product Grid -->
+    @if($products->isEmpty())
+        <div class="py-32 text-center">
+            <span class="block text-4xl mb-4 opacity-20">❍</span>
+            <p class="text-base-content/50 text-lg font-light mb-6">Our collection is empty based on your current selection.</p>
+            <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content border-b border-base-content pb-1">Reset Filters</a>
+        </div>
+    @else
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
+            @foreach ($products as $product)
+                <div class="group flex flex-col relative text-center">
+                    <!-- Image -->
+                    <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-base-200 to-base-300 flex items-center justify-center transition-transform duration-1000 group-hover:scale-105">
+                            <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">View Details</span>
+                        </div>
+                        @if ($product->is_featured)
+                            <div class="absolute top-4 left-4 z-10">
+                                <span class="bg-base-100 px-3 py-1 text-[9px] uppercase tracking-widest">Bestseller</span>
+                            </div>
+                        @endif
+                        
+                        <!-- Quick Actions -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-4 transition-all duration-500 z-20">
+                            <form method="POST" action="{{ route('cart.store') }}">
+                                @csrf
+                                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                <button type="submit" class="w-full bg-base-100 text-base-content py-3 uppercase tracking-widest text-[10px] font-semibold hover:bg-neutral hover:text-white transition-colors">
+                                    Add to Cart
+                                </button>
+                            </form>
+                        </div>
+                    </a>
+                    
+                    <!-- Content -->
+                    <div class="flex flex-col grow pt-1 pb-4">
+                        <div class="text-[10px] text-base-content/50 uppercase tracking-widest mb-2">{{ $product->category?->name ?? 'Uncategorized' }}</div>
+                        <a href="{{ route('shop.show', $product->slug) }}" class="display-font text-xl text-base-content group-hover:text-primary transition-colors mb-3">
+                            {{ $product->name }}
+                        </a>
+                        <div class="font-light text-base-content/80 mt-1">
+                            <span class="text-xs">Rp</span> {{ number_format($product->price, 0, ',', '.') }}
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+        
+        <!-- Pagination -->
+        @if($products->hasPages())
+            <div class="mt-24 pt-10 border-t border-base-200 flex justify-center">
+                {{ $products->links() }}
+            </div>
+        @endif
+    @endif
+</div>
 @endsection

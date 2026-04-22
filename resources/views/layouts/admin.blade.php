@@ -1,48 +1,64 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="bali-craft">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'Admin Panel' }} - {{ config('app.name', 'Sense of Jewels') }}</title>
+        <title>{{ $title ?? 'Admin Panel' }} – {{ config('app.name', 'Sense of Jewels') }}</title>
 
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Nunito:wght@300;400;500&display=swap" rel="stylesheet">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('partials.dynamic-theme')
     </head>
     <body class="font-sans antialiased">
         <div class="drawer lg:drawer-open">
             <input id="admin-drawer" type="checkbox" class="drawer-toggle" />
 
+            {{-- Main content area --}}
             <div class="drawer-content flex min-h-screen flex-col bg-base-200">
-                <div class="navbar border-b border-base-300 bg-base-100 px-4 shadow-sm sm:px-6">
-                    <div class="flex-none lg:hidden">
-                        <label for="admin-drawer" class="btn btn-square btn-ghost">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </label>
-                    </div>
-                    <div class="flex-1">
-                        <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost text-lg font-semibold">
-                            CMS Admin Panel
+
+                {{-- Top navbar --}}
+                <div class="flex items-center justify-between h-14 px-5 border-b border-base-300 bg-base-100">
+                    {{-- Mobile hamburger --}}
+                    <label for="admin-drawer" class="lg:hidden p-2 -ml-2 text-base-content/60 hover:text-base-content cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </label>
+
+                    {{-- Page title / breadcrumb placeholder --}}
+                    <span class="text-[11px] uppercase tracking-[0.2em] text-base-content/50 hidden lg:block">
+                        Sense of Jewels &nbsp;·&nbsp; Admin
+                    </span>
+
+                    {{-- Right: user dropdown --}}
+                    <div class="flex items-center gap-4">
+                        <a href="{{ route('home') }}" target="_blank"
+                           class="text-[10px] uppercase tracking-widest text-base-content/50 hover:text-base-content transition-colors hidden sm:block">
+                            View Site ↗
                         </a>
-                    </div>
-                    <div class="flex-none gap-2">
-                        <div class="badge badge-primary badge-outline">corporate</div>
+
                         <div class="dropdown dropdown-end">
-                            <label tabindex="0" class="btn btn-outline btn-sm">
-                                {{ auth()->user()->name ?? 'Admin' }}
+                            <label tabindex="0" class="flex items-center gap-2 cursor-pointer group">
+                                <div class="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">
+                                    {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                                </div>
+                                <span class="text-[11px] uppercase tracking-widest text-base-content/70 group-hover:text-base-content transition-colors hidden sm:block">
+                                    {{ auth()->user()->name ?? 'Admin' }}
+                                </span>
                             </label>
-                            <ul tabindex="0" class="menu dropdown-content z-10 mt-3 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow">
-                                <li><a href="{{ route('home') }}">Open Website</a></li>
-                                <li><a href="{{ route('profile.edit') }}">Profile</a></li>
+                            <ul tabindex="0" class="dropdown-content z-50 mt-3 w-44 bg-base-100 border border-base-300 shadow-lg py-1">
+                                <li><a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-[11px] uppercase tracking-widest text-base-content/70 hover:text-base-content hover:bg-base-200 transition-colors">Profile</a></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit">Logout</button>
+                                        <button type="submit" class="w-full text-left px-4 py-2.5 text-[11px] uppercase tracking-widest text-base-content/70 hover:text-base-content hover:bg-base-200 transition-colors">
+                                            Logout
+                                        </button>
                                     </form>
                                 </li>
                             </ul>
@@ -50,22 +66,26 @@
                     </div>
                 </div>
 
-                <main class="flex-1 p-4 sm:p-6 lg:p-8">
+                {{-- Page content --}}
+                <main class="flex-1 p-5 lg:p-8">
                     @if (session('success') || session('status'))
-                        <div role="alert" class="alert alert-success mb-6">
-                            <span>{{ session('success') ?? session('status') }}</span>
+                        <div class="mb-6 flex items-center gap-3 bg-success/10 border border-success/30 text-success px-4 py-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            {{ session('success') ?? session('status') }}
                         </div>
                     @endif
 
                     @if (session('error'))
-                        <div role="alert" class="alert alert-error mb-6">
-                            <span>{{ session('error') }}</span>
+                        <div class="mb-6 flex items-center gap-3 bg-error/10 border border-error/30 text-error px-4 py-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            {{ session('error') }}
                         </div>
                     @endif
 
                     @if ($errors->any())
-                        <div role="alert" class="alert alert-error mb-6">
-                            <span>{{ $errors->first() }}</span>
+                        <div class="mb-6 flex items-center gap-3 bg-error/10 border border-error/30 text-error px-4 py-3 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            {{ $errors->first() }}
                         </div>
                     @endif
 
@@ -73,74 +93,95 @@
                 </main>
             </div>
 
+            {{-- Sidebar --}}
             <div class="drawer-side z-40">
                 <label for="admin-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
-                <aside class="flex min-h-full w-80 flex-col bg-base-100 px-4 py-4 text-base-content border-r border-base-300">
-                    <!-- Sidebar Header / Logo -->
-                    <div class="mb-4 flex items-center gap-2 px-4 pb-4 border-b border-base-300">
-                        <div class="flex-1">
-                            <h2 class="text-lg font-bold text-primary">Sense of Jewels</h2>
-                            <p class="text-xs text-base-content/60">Admin Modules</p>
-                        </div>
+                <aside class="flex min-h-full w-72 flex-col bg-neutral text-neutral-content">
+
+                    {{-- Logo --}}
+                    <div class="px-6 py-6 border-b border-white/10">
+                        <a href="{{ route('admin.dashboard') }}" class="block">
+                            <p class="display-font text-2xl text-primary tracking-wide leading-none">Sense of Jewels</p>
+                            <p class="text-[9px] uppercase tracking-[0.25em] text-neutral-content/40 mt-1.5">Admin Dashboard</p>
+                        </a>
                     </div>
 
-                    <!-- Sidebar Navigation -->
-                    <ul class="menu flex-1 flex-nowrap gap-1 px-0 overflow-y-auto w-full text-base">
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                                Dashboard
-                            </a>
-                        </li>
+                    {{-- Navigation --}}
+                    <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-0.5">
 
-                        <li class="menu-title mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-base-content/50">Landing Page</li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.hero*') ? 'active' : '' }}" href="{{ route('admin.hero') }}">Hero Section</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.about*') ? 'active' : '' }}" href="{{ route('admin.about') }}">About Section</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.services*') ? 'active' : '' }}" href="{{ route('admin.services.index') }}">Services</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.portfolio*') ? 'active' : '' }}" href="{{ route('admin.portfolio.index') }}">Portfolio</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.testimonials*') ? 'active' : '' }}" href="{{ route('admin.testimonials.index') }}">Testimonials</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.contact-settings*') ? 'active' : '' }}" href="{{ route('admin.contact-settings') }}">Contact Info</a>
-                        </li>
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 rounded-none text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                            Dashboard
+                        </a>
 
-                        <li class="menu-title mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-base-content/50">Commerce</li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.products*') ? 'active' : '' }}" href="{{ route('admin.products.index') }}">Products</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.categories*') ? 'active' : '' }}" href="{{ route('admin.categories.index') }}">Categories</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.inventory*') ? 'active' : '' }}" href="{{ route('admin.inventory.index') }}">Inventory</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.discounts*') ? 'active' : '' }}" href="{{ route('admin.discounts.index') }}">Discounts</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.vouchers*') ? 'active' : '' }}" href="{{ route('admin.vouchers.index') }}">Vouchers</a>
-                        </li>
-                        <li>
-                            <a class="gap-3 {{ request()->routeIs('admin.orders*') ? 'active' : '' }}" href="{{ route('admin.orders.index') }}">Orders</a>
-                        </li>
+                        <p class="px-3 pt-5 pb-2 text-[9px] uppercase tracking-[0.25em] text-neutral-content/30">Landing Page</p>
 
-                        <li class="menu-title mt-4 px-4 text-xs font-semibold uppercase tracking-wider text-base-content/50">System</li>
-                        <li class="disabled">
-                            <a class="gap-3 text-base-content/40">Users & Roles</a>
-                        </li>
-                        <li class="disabled">
-                            <a class="gap-3 text-base-content/40">Settings</a>
-                        </li>
-                    </ul>
+                        @php
+                            $landingLinks = [
+                                ['label' => 'Hero Section',  'route' => 'admin.hero',               'match' => 'admin.hero*'],
+                                ['label' => 'About',         'route' => 'admin.about',              'match' => 'admin.about*'],
+                                ['label' => 'Services',      'route' => 'admin.services.index',     'match' => 'admin.services*'],
+                                ['label' => 'Portfolio',     'route' => 'admin.portfolio.index',    'match' => 'admin.portfolio*'],
+                                ['label' => 'Testimonials',  'route' => 'admin.testimonials.index', 'match' => 'admin.testimonials*'],
+                                ['label' => 'Contact Info',  'route' => 'admin.contact-settings',   'match' => 'admin.contact-settings*'],
+                            ];
+                        @endphp
+                        @foreach($landingLinks as $link)
+                        <a href="{{ route($link['route']) }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs($link['match']) ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            {{ $link['label'] }}
+                        </a>
+                        @endforeach
+
+                        <p class="px-3 pt-5 pb-2 text-[9px] uppercase tracking-[0.25em] text-neutral-content/30">Commerce</p>
+
+                        @php
+                            $commerceLinks = [
+                                ['label' => 'Products',    'route' => 'admin.products.index',   'match' => 'admin.products*'],
+                                ['label' => 'Categories',  'route' => 'admin.categories.index', 'match' => 'admin.categories*'],
+                                ['label' => 'Inventory',   'route' => 'admin.inventory.index',  'match' => 'admin.inventory*'],
+                                ['label' => 'Orders',      'route' => 'admin.orders.index',     'match' => 'admin.orders*'],
+                                ['label' => 'Discounts',   'route' => 'admin.discounts.index',  'match' => 'admin.discounts*'],
+                                ['label' => 'Vouchers',    'route' => 'admin.vouchers.index',   'match' => 'admin.vouchers*'],
+                            ];
+                        @endphp
+                        @foreach($commerceLinks as $link)
+                        <a href="{{ route($link['route']) }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs($link['match']) ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            {{ $link['label'] }}
+                        </a>
+                        @endforeach
+
+                        <p class="px-3 pt-5 pb-2 text-[9px] uppercase tracking-[0.25em] text-neutral-content/30">System</p>
+                        @can('manage users')
+                        <a href="{{ route('admin.users.index') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.users*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            Users
+                        </a>
+                        <a href="{{ route('admin.roles.index') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            Roles
+                        </a>
+                        @endcan
+                        <a href="{{ route('admin.media.index') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.media*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            Media Library
+                        </a>
+                        <a href="{{ route('admin.settings.index') }}"
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.settings*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            Settings
+                        </a>
+                    </nav>
+
+                    {{-- Sidebar footer --}}
+                    <div class="px-6 py-4 border-t border-white/10">
+                        <a href="{{ route('home') }}" target="_blank"
+                           class="text-[10px] uppercase tracking-widest text-neutral-content/40 hover:text-primary transition-colors">
+                            ← View Live Site
+                        </a>
+                    </div>
+
                 </aside>
             </div>
         </div>

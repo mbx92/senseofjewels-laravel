@@ -9,13 +9,77 @@
     themes: corporate --default;
 }
 
+[data-theme="bali-craft"] {
+  --color-primary: #bfa054;
+  --color-primary-content: #1a1208;
+  --color-secondary: #8faf9f;
+  --color-secondary-content: #1a221f;
+  --color-accent: #c4956a;
+  --color-accent-content: #2a1b0e;
+  --color-neutral: #3d2b1f;
+  --color-neutral-content: #ebdfd5;
+  --color-base-100: #faf6ef;
+  --color-base-200: #f0e8da;
+  --color-base-300: #e8d5b7;
+  --color-base-content: #2c1a0e;
+  --color-success: #25d366;
+  --color-success-content: #ffffff;
+  --color-warning: #fbbd23;
+}
+
 @theme {
     --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-display: "Cormorant Garamond", serif;
+    --font-body: "Nunito", sans-serif;
 }
 
 @layer base {
     body {
         @apply bg-base-200 text-base-content;
     }
+    
+    [data-theme="bali-craft"] body {
+        font-family: var(--font-body);
+        @apply bg-base-100 text-base-content;
+    }
+    
+    [data-theme="bali-craft"] h1, 
+    [data-theme="bali-craft"] h2, 
+    [data-theme="bali-craft"] h3, 
+    [data-theme="bali-craft"] h4, 
+    [data-theme="bali-craft"] h5, 
+    [data-theme="bali-craft"] h6,
+    [data-theme="bali-craft"] .display-font {
+        font-family: var(--font-display);
+    }
+
+    html,
+    body {
+      overflow-x: hidden;
+    }
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bg-grain {
+  position: relative;
+}
+.bg-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 10;
 }
