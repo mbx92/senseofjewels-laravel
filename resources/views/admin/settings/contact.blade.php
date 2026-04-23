@@ -6,12 +6,6 @@
     <p class="text-sm text-base-content/60">Kelola informasi kontak yang tampil di halaman depan.</p>
 </div>
 
-@if (session('success'))
-    <div role="alert" class="alert alert-success mb-6">
-        <span>{{ session('success') }}</span>
-    </div>
-@endif
-
 <form action="{{ route('admin.contact-settings.update') }}" method="POST">
     @csrf
     @method('PUT')

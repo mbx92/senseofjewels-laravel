@@ -116,7 +116,7 @@ function mediaPicker_{{ $inputId }}() {
         async load() {
             this.loading = true;
             try {
-                const res = await fetch(`{{ route('admin.media.json') }}?q=${encodeURIComponent(this.query)}`, {
+                const res = await fetch(`/admin/media/json?q=${encodeURIComponent(this.query)}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 this.items = await res.json();

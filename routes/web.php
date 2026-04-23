@@ -75,6 +75,9 @@ Route::middleware(['auth', 'role:super-admin|admin|editor'])->prefix('admin')->n
     Route::get('/about', [AdminSectionController::class, 'about'])->name('about');
     Route::put('/about', [AdminSectionController::class, 'updateAbout'])->name('about.update');
 
+    Route::get('/story', [AdminSectionController::class, 'story'])->name('story');
+    Route::put('/story', [AdminSectionController::class, 'updateStory'])->name('story.update');
+
     Route::get('/contact-settings', [AdminSettingController::class, 'contact'])->name('contact-settings');
     Route::put('/contact-settings', [AdminSettingController::class, 'updateContact'])->name('contact-settings.update');
 

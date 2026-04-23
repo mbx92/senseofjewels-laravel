@@ -14,12 +14,33 @@ class HeroSectionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'            => ['required', 'string', 'max:255'],
-            'subtitle'         => ['nullable', 'string', 'max:500'],
-            'cta_text'         => ['nullable', 'string', 'max:80'],
-            'cta_url'          => ['nullable', 'string', 'max:255'],
-            'background_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'is_active'        => ['boolean'],
+            // Panel 1 — Campaign Hero
+            'title'                => ['required', 'string', 'max:40'],
+            'subtitle'             => ['nullable', 'string', 'max:40'],
+            'description'          => ['nullable', 'string', 'max:500'],
+            'season_badge'         => ['nullable', 'string', 'max:80'],
+            'eyebrow'              => ['nullable', 'string', 'max:80'],
+            'cta_text'             => ['nullable', 'string', 'max:80'],
+            'cta_url'              => ['nullable', 'string', 'max:255'],
+            'background_image_url' => ['nullable', 'string', 'max:500'],
+            // Panel 2 — Product Banner
+            'banner1_label'        => ['nullable', 'string', 'max:80'],
+            'banner1_title'        => ['nullable', 'string', 'max:255'],
+            'banner1_subtitle'     => ['nullable', 'string', 'max:255'],
+            'banner1_cta_text'     => ['nullable', 'string', 'max:80'],
+            'banner1_cta_url'      => ['nullable', 'string', 'max:255'],
+            'banner1_image'        => ['nullable', 'string', 'max:500'],
+            // Panel 3 — Category Banner
+            'banner2_label'        => ['nullable', 'string', 'max:80'],
+            'banner2_title'        => ['nullable', 'string', 'max:255'],
+            'banner2_subtitle'     => ['nullable', 'string', 'max:255'],
+            'banner2_cta_text'     => ['nullable', 'string', 'max:80'],
+            'banner2_cta_url'      => ['nullable', 'string', 'max:255'],
+            'banner2_image'        => ['nullable', 'string', 'max:500'],
+            'text_position'         => ['nullable', 'string', 'in:top-left,top-center,top-right,middle-left,middle-center,middle-right,bottom-left,bottom-center,bottom-right'],
+            'banner1_text_position' => ['nullable', 'string', 'in:top-left,top-center,top-right,middle-left,middle-center,middle-right,bottom-left,bottom-center,bottom-right'],
+            'banner2_text_position' => ['nullable', 'string', 'in:top-left,top-center,top-right,middle-left,middle-center,middle-right,bottom-left,bottom-center,bottom-right'],
+            'is_active'            => ['boolean'],
         ];
     }
 }

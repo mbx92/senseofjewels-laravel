@@ -44,13 +44,17 @@
         @apply bg-base-100 text-base-content;
     }
     
-    [data-theme="bali-craft"] h1, 
+[data-theme="bali-craft"] h1, 
     [data-theme="bali-craft"] h2, 
     [data-theme="bali-craft"] h3, 
     [data-theme="bali-craft"] h4, 
     [data-theme="bali-craft"] h5, 
     [data-theme="bali-craft"] h6,
     [data-theme="bali-craft"] .display-font {
+        font-family: var(--font-display);
+    }
+
+    .display-font {
         font-family: var(--font-display);
     }
 

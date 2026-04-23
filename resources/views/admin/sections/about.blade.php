@@ -28,12 +28,6 @@
     </div>
 </div>
 
-@if (session('success'))
-    <div role="alert" class="alert alert-success mb-6">
-        <span>{{ session('success') }}</span>
-    </div>
-@endif
-
 <form action="{{ route('admin.about.update') }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')

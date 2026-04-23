@@ -9,12 +9,6 @@
     <a href="{{ route('admin.testimonials.create') }}" class="btn btn-primary btn-sm">+ Tambah Testimonial</a>
 </div>
 
-@if (session('success'))
-    <div role="alert" class="alert alert-success mb-6">
-        <span>{{ session('success') }}</span>
-    </div>
-@endif
-
 <div class="overflow-x-auto">
     <table class="table table-zebra w-full">
         <thead>

@@ -4,14 +4,14 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-12 max-w-[1400px] pb-40 md:pb-56">
     <!-- Header (Chic Minimal) -->
     <div class="py-12 md:py-20 text-center border-b border-base-300 mb-12">
-        <h1 class="display-font text-5xl md:text-6xl text-base-content mb-4 tracking-wide">Ready to Wear</h1>
+        <h1 class="display-font text-5xl md:text-6xl text-base-content mb-4 tracking-wide">{{ __('Ready to Wear') }}</h1>
         <p class="text-base-content/60 max-w-lg mx-auto text-lg font-light">Fine jewelry for your daily narrative. Explore our complete collection of modern heirlooms.</p>
     </div>
 
     <!-- Shop Tools (Horizontal Glamora Style) -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-sm uppercase tracking-widest">
         <div class="flex items-center gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 no-scrollbar whitespace-nowrap text-xs font-semibold">
-            <a href="{{ route('shop.index') }}" class="{{ !request('category') ? 'text-base-content border-b border-base-content' : 'text-base-content/50 hover:text-base-content' }} pb-1 transition-colors">All</a>
+            <a href="{{ route('shop.index') }}" class="{{ !request('category') ? 'text-base-content border-b border-base-content' : 'text-base-content/50 hover:text-base-content' }} pb-1 transition-colors">{{ __('All') }}</a>
             @foreach ($categories as $category)
                 <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="{{ request('category') === $category->slug ? 'text-base-content border-b border-base-content' : 'text-base-content/50 hover:text-base-content' }} pb-1 transition-colors">{{ $category->name }}</a>
             @endforeach
@@ -22,7 +22,7 @@
                 <input type="hidden" name="category" value="{{ request('category') }}">
             @endif
             <div class="relative">
-                <input type="text" name="search" value="{{ request('search') }}" class="w-full border-b border-base-content/20 bg-transparent py-2 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-base-content transition-colors" placeholder="SEARCH COLLECTION...">
+                <input type="text" name="search" value="{{ request('search') }}" class="w-full border-b border-base-content/20 bg-transparent py-2 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-base-content transition-colors" placeholder="{{ strtoupper(__('Search Collection...')) }}">
                 <button type="submit" class="absolute right-0 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                 </button>
@@ -35,7 +35,7 @@
         <div class="py-32 text-center">
             <span class="block text-4xl mb-4 opacity-20">❍</span>
             <p class="text-base-content/50 text-lg font-light mb-6">Our collection is empty based on your current selection.</p>
-            <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content border-b border-base-content pb-1">Reset Filters</a>
+            <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content border-b border-base-content pb-1">{{ __('Reset Filters') }}</a>
         </div>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
@@ -44,11 +44,11 @@
                     <!-- Image -->
                     <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative">
                         <div class="absolute inset-0 bg-gradient-to-tr from-base-200 to-base-300 flex items-center justify-center transition-transform duration-1000 group-hover:scale-105">
-                            <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">View Details</span>
+                            <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">{{ __('View Details') }}</span>
                         </div>
                         @if ($product->is_featured)
                             <div class="absolute top-4 left-4 z-10">
-                                <span class="bg-base-100 px-3 py-1 text-[9px] uppercase tracking-widest">Bestseller</span>
+                                <span class="bg-base-100 px-3 py-1 text-[9px] uppercase tracking-widest">{{ __('Bestseller') }}</span>
                             </div>
                         @endif
                         
@@ -58,7 +58,7 @@
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 <button type="submit" class="w-full bg-base-100 text-base-content py-3 uppercase tracking-widest text-[10px] font-semibold hover:bg-neutral hover:text-white transition-colors">
-                                    Add to Cart
+                                    {{ __('Add to Cart') }}
                                 </button>
                             </form>
                         </div>
@@ -66,7 +66,7 @@
                     
                     <!-- Content -->
                     <div class="flex flex-col grow pt-1 pb-4">
-                        <div class="text-[10px] text-base-content/50 uppercase tracking-widest mb-2">{{ $product->category?->name ?? 'Uncategorized' }}</div>
+                        <div class="text-[10px] text-base-content/50 uppercase tracking-widest mb-2">{{ $product->category?->name ?? __('Uncategorized') }}</div>
                         <a href="{{ route('shop.show', $product->slug) }}" class="display-font text-xl text-base-content group-hover:text-primary transition-colors mb-3">
                             {{ $product->name }}
                         </a>

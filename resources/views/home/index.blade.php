@@ -8,46 +8,96 @@
     @endphp
 
     <div class="space-y-10">
-        <section class="hero overflow-hidden rounded-box bg-base-100 shadow-xl">
-            <div class="hero-content grid gap-10 px-6 py-14 lg:grid-cols-[1.2fr,0.8fr] lg:px-12">
-                <div>
-                    <div class="badge badge-primary badge-outline">Laravel 11 + DaisyUI CMS</div>
-                    <h1 class="mt-4 text-4xl font-black leading-tight lg:text-5xl">
-                        {{ $hero?->title ?? $page?->title ?? 'Elegant company profile and commerce experience in one platform.' }}
+        {{-- Hero Section: 3-panel editorial layout --}}
+        @php
+            $h = fn(string $key, string $default = '') => ($hero?->settings[$key] ?? null) ?: $default;
+            $panel1Bg = $hero?->image_url
+                ? 'background-image:url(\''.e($hero->image_url).'\');background-size:cover;background-position:center;'
+                : 'background:linear-gradient(160deg,#3d2b1f 0%,#8b7355 60%,#bfa054 100%);';
+            $panel2Bg = $h('banner1_image')
+                ? 'background-image:url(\''.e($h('banner1_image')).'\');background-size:cover;background-position:center;'
+                : 'background:linear-gradient(135deg,#f5ede0 0%,#e8d5b7 100%);';
+            $panel3Bg = $h('banner2_image')
+                ? 'background-image:url(\''.e($h('banner2_image')).'\');background-size:cover;background-position:center;'
+                : 'background:linear-gradient(135deg,#ede8df 0%,#ddd0b8 100%);';
+        @endphp
+        <section style="display:grid;grid-template-columns:3fr 2fr;min-height:580px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.18);">
+
+            {{-- Panel 1: Campaign / Main Hero --}}
+            <div style="position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:3rem;{{ $panel1Bg }}">
+                <div style="position:absolute;inset:0;background:rgba(0,0,0,.40);"></div>
+                {{-- Top: season badge --}}
+                <div style="position:relative;z-index:10;">
+                    <p style="font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:rgba(255,255,255,.50);">{{ $h('season_badge', 'NEW SEASON ' . date('Y')) }}</p>
+                </div>
+                {{-- Bottom: main content --}}
+                <div style="position:relative;z-index:10;">
+                    <p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:rgba(255,255,255,.60);margin-bottom:1rem;">{{ $h('eyebrow', 'ARTISAN JEWELRY · BALI') }}</p>
+                    <h1 class="display-font" style="font-size:clamp(2.5rem,5vw,4.5rem);font-weight:300;line-height:1.05;color:#fff;">
+                        {{ $hero?->title ?? 'Timeless' }}<br>
+                        <em style="font-style:italic;">{{ $hero?->subtitle ?? 'Elegance' }}</em>
                     </h1>
-                    <p class="mt-4 max-w-2xl text-base-content/70">
-                        {{ $hero?->subtitle ?? $page?->excerpt ?? 'This landing page is already wired to CMS-friendly models for hero, about, services, portfolio, testimonials, and contact details.' }}
+                    <p style="margin-top:1.25rem;font-size:.875rem;color:rgba(255,255,255,.65);max-width:20rem;line-height:1.6;">
+                        {{ $hero?->content ?? 'Handcrafted fine jewelry designed for the modern everyday.' }}
                     </p>
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a href="{{ route('shop.index') }}" class="btn btn-primary">
-                            {{ $hero?->cta_text ?? 'Explore Products' }}
+                    <div style="margin-top:2rem;">
+                        <a href="{{ $hero?->cta_url ?? route('shop.index') }}"
+                           style="display:inline-flex;align-items:center;gap:.75rem;border:1px solid rgba(255,255,255,.50);color:#fff;font-size:10px;letter-spacing:.3em;text-transform:uppercase;padding:.875rem 1.75rem;text-decoration:none;transition:background .3s,color .3s;"
+                           onmouseover="this.style.background='#fff';this.style.color='#1a1a1a';"
+                           onmouseout="this.style.background='transparent';this.style.color='#fff';">
+                            {{ $hero?->cta_text ?? 'SHOP COLLECTION' }}
                         </a>
-                        <a href="#contact" class="btn btn-outline">Contact Us</a>
                     </div>
                 </div>
-                <div class="card border border-base-300 bg-base-200 shadow-lg">
-                    <div class="card-body">
-                        <h2 class="card-title">Project Overview</h2>
-                        <div class="grid gap-4 sm:grid-cols-2">
-                            <div class="rounded-box bg-base-100 p-4">
-                                <div class="text-sm text-base-content/60">Services</div>
-                                <div class="text-3xl font-semibold">{{ $services->count() }}</div>
-                            </div>
-                            <div class="rounded-box bg-base-100 p-4">
-                                <div class="text-sm text-base-content/60">Portfolio Items</div>
-                                <div class="text-3xl font-semibold">{{ $portfolioItems->count() }}</div>
-                            </div>
-                            <div class="rounded-box bg-base-100 p-4">
-                                <div class="text-sm text-base-content/60">Testimonials</div>
-                                <div class="text-3xl font-semibold">{{ $testimonials->count() }}</div>
-                            </div>
-                            <div class="rounded-box bg-base-100 p-4">
-                                <div class="text-sm text-base-content/60">Theme</div>
-                                <div class="text-3xl font-semibold">Corporate</div>
-                            </div>
-                        </div>
+            </div>
+
+            {{-- Right column: 2 stacked banners --}}
+            <div style="display:flex;flex-direction:column;">
+
+                {{-- Panel 2: Product Banner (top right) --}}
+                <div style="position:relative;display:flex;align-items:center;padding:2.5rem;flex:1;{{ $panel2Bg }}">
+                    @if($h('banner1_image'))<div style="position:absolute;inset:0;background:rgba(0,0,0,.30);"></div>@endif
+                    <div style="position:relative;z-index:10;">
+                        <p style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:{{ $h('banner1_image') ? 'rgba(255,255,255,.60)' : 'rgba(0,0,0,.45)' }};">
+                            {{ $h('banner1_label', 'SELECTED COLLECTION') }}
+                        </p>
+                        <h2 class="display-font" style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:300;margin-top:.5rem;color:{{ $h('banner1_image') ? '#fff' : 'inherit' }};">
+                            {{ $h('banner1_title', 'Emas & Perak') }}
+                        </h2>
+                        <p class="display-font" style="font-size:1.25rem;font-style:italic;margin-top:.25rem;color:{{ $h('banner1_image') ? '#fcd34d' : '#bfa054' }};">
+                            {{ $h('banner1_subtitle', 'Artisan Bali') }}
+                        </p>
+                        @if($h('banner1_cta_text'))
+                            <a href="{{ $h('banner1_cta_url', route('shop.index')) }}"
+                               style="display:inline-flex;align-items:center;border:1px solid {{ $h('banner1_image') ? 'rgba(255,255,255,.50)' : 'rgba(0,0,0,.35)' }};color:{{ $h('banner1_image') ? '#fff' : 'inherit' }};font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:.625rem 1.25rem;margin-top:1.25rem;text-decoration:none;">
+                                {{ $h('banner1_cta_text') }}
+                            </a>
+                        @endif
                     </div>
                 </div>
+
+                {{-- Panel 3: Category Banner (bottom right) --}}
+                <div style="position:relative;display:flex;align-items:center;padding:2.5rem;flex:1;border-top:1px solid rgba(0,0,0,.08);{{ $panel3Bg }}">
+                    @if($h('banner2_image'))<div style="position:absolute;inset:0;background:rgba(0,0,0,.30);"></div>@endif
+                    <div style="position:relative;z-index:10;">
+                        <p style="font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:{{ $h('banner2_image') ? 'rgba(255,255,255,.60)' : 'rgba(0,0,0,.45)' }};">
+                            {{ $h('banner2_label', 'EST. 2019') }}
+                        </p>
+                        <h2 class="display-font" style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:300;margin-top:.5rem;color:{{ $h('banner2_image') ? '#fff' : 'inherit' }};">
+                            {{ $h('banner2_title', 'Cincin &') }}<br>
+                            <em style="font-style:italic;color:{{ $h('banner2_image') ? '#fcd34d' : '#bfa054' }};">
+                                {{ $h('banner2_subtitle', 'Kalung Pilihan') }}
+                            </em>
+                        </h2>
+                        @if($h('banner2_cta_text'))
+                            <a href="{{ $h('banner2_cta_url', route('shop.index')) }}"
+                               style="display:inline-flex;align-items:center;border:1px solid {{ $h('banner2_image') ? 'rgba(255,255,255,.50)' : 'rgba(0,0,0,.35)' }};color:{{ $h('banner2_image') ? '#fff' : 'inherit' }};font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:.625rem 1.25rem;margin-top:1.25rem;text-decoration:none;">
+                                {{ $h('banner2_cta_text') }}
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
             </div>
         </section>
 

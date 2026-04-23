@@ -121,6 +121,7 @@
                             $landingLinks = [
                                 ['label' => 'Hero Section',  'route' => 'admin.hero',               'match' => 'admin.hero*'],
                                 ['label' => 'About',         'route' => 'admin.about',              'match' => 'admin.about*'],
+                                ['label' => 'Story',         'route' => 'admin.story',              'match' => 'admin.story*'],
                                 ['label' => 'Services',      'route' => 'admin.services.index',     'match' => 'admin.services*'],
                                 ['label' => 'Portfolio',     'route' => 'admin.portfolio.index',    'match' => 'admin.portfolio*'],
                                 ['label' => 'Testimonials',  'route' => 'admin.testimonials.index', 'match' => 'admin.testimonials*'],

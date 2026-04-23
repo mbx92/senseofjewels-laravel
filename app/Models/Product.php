@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -62,5 +63,18 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        $primary = $this->images->first();
+        if ($primary) {
+            $path = $primary->path;
+            if (str_starts_with($path, '/') || str_starts_with($path, 'http')) {
+                return $path;
+            }
+            return Storage::disk('public')->url($path);
+        }
+        return null;
     }
 }

@@ -25,7 +25,7 @@
         <div class="w-full bg-neutral text-neutral-content">
             <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-4 text-[11px] tracking-wide">
                 <span class="hidden sm:block">✦ &nbsp; Sense of Jewels Studio &nbsp;·&nbsp; Seminyak, Bali</span>
-                <span class="w-full sm:w-auto text-center sm:text-right">Gratis ongkir seluruh Indonesia &nbsp;|&nbsp; Pesan via WhatsApp</span>
+                <span class="w-full sm:w-auto text-center sm:text-right">{{ __('Free shipping to all of Indonesia') }} &nbsp;|&nbsp; {{ __('Order via WhatsApp') }}</span>
             </div>
         </div>
 
@@ -46,11 +46,11 @@
             <!-- Mobile Dropdown -->
             <div id="mobile-menu" class="hidden lg:hidden border-t border-base-200 bg-base-100 px-6 pb-5 pt-3">
                 <ul class="space-y-1">
-                    <li><a href="{{ url('/') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content hover:text-primary transition-colors">Home</a></li>
-                    <li><a href="{{ route('shop.index') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">Shop</a></li>
-                    <li><a href="{{ route('cart.index') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">Cart</a></li>
-                    <li><a href="{{ url('/#story') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">Story</a></li>
-                    <li><a href="{{ url('/#contact') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">Contact</a></li>
+                    <li><a href="{{ url('/') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content hover:text-primary transition-colors">{{ __('Home') }}</a></li>
+                    <li><a href="{{ route('shop.index') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Shop') }}</a></li>
+                    <li><a href="{{ route('cart.index') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Cart') }}</a></li>
+                    <li><a href="{{ url('/#story') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Story') }}</a></li>
+                    <li><a href="{{ url('/#contact') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Contact') }}</a></li>
                 </ul>
             </div>
 
@@ -59,10 +59,10 @@
 
                 <!-- Left: Navigation Links -->
                 <nav class="flex items-center gap-8">
-                    <a href="{{ url('/') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold transition-colors {{ request()->is('/') ? 'text-primary' : 'text-base-content/70 hover:text-primary' }}">Home</a>
-                    <a href="{{ route('shop.index') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold transition-colors {{ request()->routeIs('shop.*') ? 'text-primary' : 'text-base-content/70 hover:text-primary' }}">Shop</a>
-                    <a href="{{ url('/#story') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold text-base-content/70 hover:text-primary transition-colors">Story</a>
-                    <a href="{{ url('/#contact') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold text-base-content/70 hover:text-primary transition-colors">Contact</a>
+                    <a href="{{ url('/') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold transition-colors {{ request()->is('/') ? 'text-primary' : 'text-base-content/70 hover:text-primary' }}">{{ __('Home') }}</a>
+                    <a href="{{ route('shop.index') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold transition-colors {{ request()->routeIs('shop.*') ? 'text-primary' : 'text-base-content/70 hover:text-primary' }}">{{ __('Shop') }}</a>
+                    <a href="{{ url('/#story') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Story') }}</a>
+                    <a href="{{ url('/#contact') }}" class="text-[11px] uppercase tracking-[0.18em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Contact') }}</a>
                 </nav>
 
                 <!-- Center: Logo -->
@@ -94,7 +94,7 @@
                     </a>
                     <!-- WA CTA -->
                     <a href="https://wa.me/6281200000000" target="_blank" class="text-[10px] uppercase tracking-[0.18em] font-bold bg-neutral text-neutral-content px-4 py-2.5 hover:bg-primary hover:text-primary-content transition-colors whitespace-nowrap">
-                        Order WA
+                        {{ __('Order WA') }}
                     </a>
                     <!-- Language & Currency switcher -->
                     <div class="flex items-center gap-1" x-data>
@@ -164,7 +164,7 @@
             </aside>
             
             <nav class="flex flex-col gap-3">
-                <h6 class="footer-title text-primary opacity-100 mb-2">Navigation</h6>
+                <h6 class="footer-title text-primary opacity-100 mb-2">{{ __('Navigation') }}</h6>
                 <a href="#home" class="link link-hover text-neutral-content/80">Home</a>
                 <a href="#collection" class="link link-hover text-neutral-content/80">Collection</a>
                 <a href="#story" class="link link-hover text-neutral-content/80">Brand Story</a>
@@ -172,7 +172,7 @@
             </nav>
             
             <nav class="flex flex-col gap-3">
-                <h6 class="footer-title text-primary opacity-100 mb-2">Social</h6>
+                <h6 class="footer-title text-primary opacity-100 mb-2">{{ __('Social') }}</h6>
                 <a href="https://instagram.com/senseofjewels" target="_blank" class="link link-hover flex items-center gap-3 text-neutral-content/80">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                     Instagram
