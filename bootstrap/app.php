@@ -16,6 +16,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Allow admin panel and login page during maintenance mode
+        $middleware->preventRequestsDuringMaintenance(except: [
+            '/admin',
+            '/admin/*',
+            '/login',
+            '/logout',
+        ]);
+
+        // Exclude Midtrans webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'payment/notification',
+        ]);
         $middleware->web(append: [
             SetLocale::class,
         ]);

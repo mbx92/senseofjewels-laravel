@@ -190,7 +190,7 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
                 @forelse($newArrivals as $product)
                 <a href="{{ route('shop.show', $product->slug) }}" class="group cursor-pointer">
-                    <div class="aspect-[3/4] bg-base-200 mb-5 relative overflow-hidden">
+                    <div class="aspect-[3/4] bg-base-200 mb-5 relative overflow-hidden border border-base-300 group-hover:border-primary/40 transition-colors">
                         @if($product->image_url)
                         <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                              class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
@@ -219,6 +219,56 @@
                 <p class="col-span-4 text-center text-base-content/40 py-8">{{ __('No products yet.') }}</p>
                 @endforelse
             </div>
+        </div>
+    </section>
+
+    {{-- ====================================================
+         FEATURED PRODUCTS — Editorial spotlight
+    ===================================================== --}}
+    <section class="py-20 md:py-28 bg-base-200 border-y border-base-300">
+        <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+                <div>
+                    <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-3">Editor's Pick</span>
+                    <h2 class="display-font text-4xl md:text-5xl text-base-content">{{ __('Featured Products') }}</h2>
+                    <p class="mt-4 max-w-2xl text-sm md:text-base text-base-content/65 font-light leading-relaxed">
+                        {{ __('Kurasi perhiasan pilihan dengan detail paling menonjol, material terbaik, dan karakter desain yang kuat.') }}
+                    </p>
+                </div>
+                <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content hover:text-primary border-b border-base-content hover:border-primary transition-all pb-1">
+                    {{ __('Explore Collection') }}
+                </a>
+            </div>
+
+            @if($featuredProducts->isNotEmpty())
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
+                @foreach($featuredProducts as $product)
+                <a href="{{ route('shop.show', $product->slug) }}" class="group cursor-pointer">
+                    <div class="aspect-[3/4] bg-base-100 mb-5 relative overflow-hidden border border-base-300 group-hover:border-primary/40 transition-colors">
+                        @if($product->image_url)
+                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                             class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        @else
+                        <div class="absolute inset-0 bg-base-100"></div>
+                        @endif
+                        <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-400 z-20">
+                            <span class="block w-full bg-base-100/95 text-base-content py-2.5 uppercase tracking-widest text-[9px] font-semibold text-center">
+                                {{ __('View Product') }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-center px-1">
+                        <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $product->name }}</h3>
+                        <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+            @else
+            <div class="border border-dashed border-base-300 bg-base-100 px-6 py-16 text-center text-base-content/50">
+                {{ __('Belum ada produk unggulan yang aktif. Tandai produk sebagai featured dari admin untuk menampilkannya di landing page.') }}
+            </div>
+            @endif
         </div>
     </section>
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Cart;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -32,6 +33,24 @@ class AppServiceProvider extends ServiceProvider
             }
 
             $view->with('themeColors', $themeColors);
+        });
+
+        // Share cart item count to layout views
+        View::composer('layouts.app', function ($view) {
+            try {
+                $sessionId = request()->session()->getId();
+                $count = 0;
+                if ($sessionId && Schema::hasTable('carts')) {
+                    $cart = Cart::query()
+                        ->where('session_id', $sessionId)
+                        ->withCount('items')
+                        ->first();
+                    $count = $cart?->items_count ?? 0;
+                }
+            } catch (\Throwable) {
+                $count = 0;
+            }
+            $view->with('navCartCount', $count);
         });
     }
 }

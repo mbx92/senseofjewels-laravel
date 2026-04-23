@@ -22,6 +22,7 @@ class Discount extends Model
         'ends_at',
         'is_active',
         'conditions',
+        'image_url',
     ];
 
     protected function casts(): array

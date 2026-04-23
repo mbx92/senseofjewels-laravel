@@ -20,6 +20,7 @@ class Voucher extends Model
         'ends_at',
         'is_active',
         'metadata',
+        'image_url',
     ];
 
     protected function casts(): array

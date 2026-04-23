@@ -1,12 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.account')
 
-@section('title', 'Pesanan Saya')
-
-@section('content')
-<div class="mx-auto max-w-4xl space-y-6">
-    <div class="space-y-1">
-        <h1 class="text-3xl font-bold">Pesanan Saya</h1>
-        <p class="text-sm text-base-content/60">Daftar transaksi Anda tampil dengan ritme yang sama seperti halaman shop dan checkout.</p>
+@section('account-content')
+<div class="space-y-8 w-full">
+    <div>
+        <h1 class="display-font text-4xl text-base-content font-normal lg:text-5xl">Pesanan Saya</h1>
     </div>
 
     @if (session('status'))
@@ -14,14 +11,14 @@
     @endif
 
     @if ($orders->isEmpty())
-        <div class="card bg-base-200 shadow-sm">
-            <div class="card-body py-14 text-center sm:py-16">
+        <div class="card w-full border border-base-300 bg-base-200/70 shadow-sm">
+            <div class="card-body min-h-72 items-center justify-center py-10 text-center sm:py-12">
                 <p class="mb-4 text-base-content/60">Anda belum memiliki pesanan.</p>
                 <a href="{{ route('shop.index') }}" class="btn btn-primary">Mulai Belanja</a>
             </div>
         </div>
     @else
-        <div class="card bg-base-100 shadow-sm overflow-hidden">
+        <div class="card w-full border border-base-300 bg-base-100 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="table table-zebra">
                     <thead>

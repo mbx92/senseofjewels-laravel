@@ -103,21 +103,24 @@ class CheckoutController extends Controller
             voucherId: $voucherId,
         );
 
-        // Scaffold payment record (Midtrans connected in Prompt 4)
-        Payment::query()->create([
-            'order_id' => $order->id,
-            'provider' => 'midtrans',
-            'amount'   => $order->total,
-            'currency' => $order->currency,
-            'status'   => 'pending',
-            'payload'  => ['status' => 'awaiting_snap_token'],
-        ]);
+        // Create payment record for Midtrans
+        Payment::query()->firstOrCreate(
+            ['order_id' => $order->id],
+            [
+                'provider' => 'midtrans',
+                'amount'   => $order->total,
+                'currency' => $order->currency ?? 'IDR',
+                'status'   => 'pending',
+                'payload'  => [],
+            ],
+        );
 
-        // Clear cart
+        // Clear cart & temp session data
         $this->cartService->clear();
         session()->forget('checkout_voucher_id');
+        session(['last_order_number' => $order->order_number]);
 
-        return redirect()->route('orders.show', $order->order_number)
+        return redirect()->route('payment.show', $order->order_number)
             ->with('status', 'Order berhasil dibuat! Silakan selesaikan pembayaran.');
     }
 }

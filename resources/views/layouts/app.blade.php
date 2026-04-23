@@ -38,8 +38,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
                 <a href="{{ url('/') }}" class="display-font text-2xl text-base-content">Sense of Jewels</a>
-                <a href="{{ route('cart.index') }}" class="p-2 text-base-content/70 hover:text-base-content">
+                <a href="{{ route('cart.index') }}" class="relative inline-flex h-8 w-8 items-center justify-center p-2 text-base-content/70 hover:text-base-content">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    @if(!empty($navCartCount) && $navCartCount > 0)
+                    <span class="absolute top-0 right-0 flex h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount }}</span>
+                    @endif
                 </a>
             </div>
 
@@ -89,8 +92,11 @@
                     </a>
                     @endauth
                     <!-- Cart Icon -->
-                    <a href="{{ route('cart.index') }}" class="text-base-content/50 hover:text-base-content transition-colors">
+                    <a href="{{ route('cart.index') }}" class="relative inline-flex h-8 w-8 items-center justify-center text-base-content/50 hover:text-base-content transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        @if(!empty($navCartCount) && $navCartCount > 0)
+                        <span class="absolute top-0 right-0 flex h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount }}</span>
+                        @endif
                     </a>
                     <!-- WA CTA -->
                     <a href="https://wa.me/6281200000000" target="_blank" class="text-[10px] uppercase tracking-[0.18em] font-bold bg-neutral text-neutral-content px-4 py-2.5 hover:bg-primary hover:text-primary-content transition-colors whitespace-nowrap">

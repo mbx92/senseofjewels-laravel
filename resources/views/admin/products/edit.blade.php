@@ -24,38 +24,38 @@
                 <div class="card-body gap-4">
                     <h2 class="card-title text-base">Informasi Dasar</h2>
 
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Nama Produk <span class="text-error">*</span></span></label>
-                        <input type="text" name="name" value="{{ old('name', $product->name) }}" class="input input-bordered @error('name') input-error @enderror" required />
-                        @error('name')<span class="label-text-alt text-error mt-1">{{ $message }}</span>@enderror
-                    </div>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Nama Produk <span class="text-error">*</span></legend>
+                        <input type="text" name="name" value="{{ old('name', $product->name) }}" class="input w-full @error('name') input-error @enderror" required />
+                        @error('name')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
+                    </fieldset>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">SKU <span class="text-error">*</span></span></label>
-                            <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="input input-bordered @error('sku') input-error @enderror" required />
-                            @error('sku')<span class="label-text-alt text-error mt-1">{{ $message }}</span>@enderror
-                        </div>
-                        <div class="form-control">
-                            <label class="label"><span class="label-text">Kategori</span></label>
-                            <select name="category_id" class="select select-bordered">
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">SKU <span class="text-error">*</span></legend>
+                            <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" class="input w-full @error('sku') input-error @enderror" required />
+                            @error('sku')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
+                        </fieldset>
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Kategori</legend>
+                            <select name="category_id" class="select w-full">
                                 <option value="">— Tanpa Kategori —</option>
                                 @foreach ($categories as $cat)
                                     <option value="{{ $cat->id }}" @selected(old('category_id', $product->category_id) == $cat->id)>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
-                        </div>
+                        </fieldset>
                     </div>
 
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Deskripsi Singkat</span></label>
-                        <textarea name="short_description" rows="2" class="textarea textarea-bordered">{{ old('short_description', $product->short_description) }}</textarea>
-                    </div>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Deskripsi Singkat</legend>
+                        <textarea name="short_description" rows="3" class="textarea w-full">{{ old('short_description', $product->short_description) }}</textarea>
+                    </fieldset>
 
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Deskripsi Lengkap</span></label>
-                        <textarea id="description" name="description" rows="6" class="textarea textarea-bordered">{{ old('description', $product->description) }}</textarea>
-                    </div>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Deskripsi Lengkap</legend>
+                        <textarea id="description" name="description" rows="6" class="textarea w-full">{{ old('description', $product->description) }}</textarea>
+                    </fieldset>
                 </div>
             </div>
 
@@ -89,8 +89,15 @@
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body gap-3">
                     <h2 class="card-title text-base">Tambah Gambar Baru</h2>
-                    <p class="text-sm text-base-content/60">Maks. 8 gambar total, masing-masing maks. 2MB.</p>
-                    <input type="file" name="images[]" multiple accept="image/*" class="file-input file-input-bordered w-full" />
+                    <p class="text-sm text-base-content/60">Pilih dari media library. Gambar yang sudah ada di atas tidak akan terhapus.</p>
+                    @foreach (range(0, 3) as $i)
+                        @include('admin.components.media-picker', [
+                            'inputName'    => 'media_image_urls[]',
+                            'inputId'      => 'product_edit_img_' . $i,
+                            'currentValue' => '',
+                            'label'        => 'Gambar Baru ' . ($i + 1),
+                        ])
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -100,36 +107,36 @@
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body gap-3">
                     <h2 class="card-title text-base">Harga & Biaya</h2>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Harga Jual (Rp) <span class="text-error">*</span></span></label>
-                        <input type="number" name="price" value="{{ old('price', $product->price) }}" step="1" min="0" class="input input-bordered" required />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Harga Coret (Rp)</span></label>
-                        <input type="number" name="compare_at_price" value="{{ old('compare_at_price', $product->compare_at_price) }}" step="1" min="0" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Harga Modal (Rp)</span></label>
-                        <input type="number" name="cost_price" value="{{ old('cost_price', $product->cost_price) }}" step="1" min="0" class="input input-bordered" />
-                    </div>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Harga Jual (Rp) <span class="text-error">*</span></legend>
+                        <input type="number" name="price" value="{{ old('price', $product->price) }}" step="1" min="0" class="input w-full" required />
+                    </fieldset>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Harga Coret (Rp)</legend>
+                        <input type="number" name="compare_at_price" value="{{ old('compare_at_price', $product->compare_at_price) }}" step="1" min="0" class="input w-full" />
+                    </fieldset>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Harga Modal (Rp)</legend>
+                        <input type="number" name="cost_price" value="{{ old('cost_price', $product->cost_price) }}" step="1" min="0" class="input w-full" />
+                    </fieldset>
                 </div>
             </div>
 
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body gap-3">
                     <h2 class="card-title text-base">Stok & Berat</h2>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Stok</span></label>
-                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Alert Stok Minimum</span></label>
-                        <input type="number" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert) }}" min="0" class="input input-bordered" />
-                    </div>
-                    <div class="form-control">
-                        <label class="label"><span class="label-text">Berat (gram)</span></label>
-                        <input type="number" name="weight" value="{{ old('weight', $product->weight) }}" step="0.01" min="0" class="input input-bordered" />
-                    </div>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Stok</legend>
+                        <input type="number" name="stock" value="{{ old('stock', $product->stock) }}" min="0" class="input w-full" />
+                    </fieldset>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Alert Stok Minimum</legend>
+                        <input type="number" name="min_stock_alert" value="{{ old('min_stock_alert', $product->min_stock_alert) }}" min="0" class="input w-full" />
+                    </fieldset>
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Berat (gram)</legend>
+                        <input type="number" name="weight" value="{{ old('weight', $product->weight) }}" step="0.01" min="0" class="input w-full" />
+                    </fieldset>
                 </div>
             </div>
 
@@ -156,22 +163,45 @@
 </div>
 @endsection
 
-@push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!document.querySelector('#description')) {
-            return;
-        }
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-container { border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem; }
+    .ql-toolbar { border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
+    .ql-editor { min-height: 220px; font-size: 14px; }
+</style>
+@endpush
 
-        tinymce.init({
-            selector: '#description',
-            plugins: 'link lists image code',
-            toolbar: 'undo redo | bold italic | bullist numlist | link image | code',
-            menubar: false,
-            height: 300,
-            skin: 'oxide',
-        });
+@push('scripts')
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const textarea = document.getElementById('description');
+    if (!textarea) return;
+
+    const wrapper = document.createElement('div');
+    textarea.parentNode.insertBefore(wrapper, textarea);
+    textarea.style.display = 'none';
+
+    const quill = new Quill(wrapper, {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link'],
+                ['clean'],
+            ],
+        },
     });
+
+    if (textarea.value) {
+        quill.root.innerHTML = textarea.value;
+    }
+
+    textarea.form.addEventListener('submit', () => {
+        textarea.value = quill.root.innerHTML;
+    });
+});
 </script>
 @endpush

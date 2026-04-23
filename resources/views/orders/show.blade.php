@@ -1,16 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.account')
 
-@section('title', 'Detail Pesanan – ' . $order->order_number)
+@section('account-content')
+<div class="space-y-8">
 
-@section('content')
-<div class="mx-auto max-w-4xl space-y-6">
-
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-2">
-            <a href="{{ route('orders.index') }}" class="btn btn-ghost btn-sm">← Kembali</a>
-            <h1 class="text-2xl font-bold">Pesanan #{{ $order->order_number }}</h1>
+    <div class="space-y-1">
+        <a href="{{ route('orders.index') }}" class="text-[10px] uppercase tracking-[0.18em] font-semibold text-base-content/40 hover:text-primary transition-colors">← Orders</a>
+        <div class="flex items-end justify-between gap-4 flex-wrap">
+            <h1 class="display-font text-3xl text-base-content font-normal">{{ $order->order_number }}</h1>
+            <span class="text-xs text-base-content/50 pb-1">{{ $order->placed_at?->format('d M Y') }}</span>
         </div>
-        <span class="badge badge-outline badge-sm w-fit">{{ $order->placed_at?->format('d M Y') }}</span>
     </div>
 
     @if (session('status'))

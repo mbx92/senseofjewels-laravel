@@ -42,7 +42,7 @@
             @foreach ($products as $product)
                 <div class="group flex flex-col relative text-center">
                     <!-- Image -->
-                    <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative">
+                    <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative border border-base-300 group-hover:border-primary/40 transition-colors">
                         <div class="absolute inset-0 bg-gradient-to-tr from-base-200 to-base-300 flex items-center justify-center transition-transform duration-1000 group-hover:scale-105">
                             <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">{{ __('View Details') }}</span>
                         </div>

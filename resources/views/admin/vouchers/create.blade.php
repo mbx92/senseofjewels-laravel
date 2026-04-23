@@ -17,15 +17,15 @@
         <form method="POST" action="{{ route('admin.vouchers.store') }}" class="space-y-4">
             @csrf
 
-            <div class="form-control">
-                <label class="label"><span class="label-text">Kode Voucher <span class="text-error">*</span></span></label>
-                <input type="text" name="code" value="{{ old('code') }}" class="input input-bordered uppercase @error('code') input-error @enderror" placeholder="HEMAT50" required />
-                @error('code')<span class="label-text-alt text-error">{{ $message }}</span>@enderror
-            </div>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Kode Voucher <span class="text-error">*</span></legend>
+                <input type="text" name="code" value="{{ old('code') }}" class="input w-full uppercase @error('code') input-error @enderror" placeholder="HEMAT50" required />
+                @error('code')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
+            </fieldset>
 
-            <div class="form-control">
-                <label class="label"><span class="label-text">Diskon Terkait <span class="text-error">*</span></span></label>
-                <select name="discount_id" class="select select-bordered @error('discount_id') select-error @enderror" required>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Diskon Terkait <span class="text-error">*</span></legend>
+                <select name="discount_id" class="select w-full @error('discount_id') select-error @enderror" required>
                     <option value="">— Pilih Diskon —</option>
                     @foreach ($discounts as $discount)
                         <option value="{{ $discount->id }}" @selected(old('discount_id') == $discount->id)>
@@ -34,35 +34,42 @@
                         </option>
                     @endforeach
                 </select>
-                @error('discount_id')<span class="label-text-alt text-error">{{ $message }}</span>@enderror
-            </div>
+                @error('discount_id')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
+            </fieldset>
 
-            <div class="form-control">
-                <label class="label"><span class="label-text">Deskripsi</span></label>
-                <textarea name="description" rows="2" class="textarea textarea-bordered">{{ old('description') }}</textarea>
-            </div>
+            <fieldset class="fieldset">
+                <legend class="fieldset-legend">Deskripsi</legend>
+                <textarea name="description" rows="2" class="textarea w-full">{{ old('description') }}</textarea>
+            </fieldset>
+
+            @include('admin.components.media-picker', [
+                'inputName'    => 'image_url',
+                'inputId'      => 'voucher_image_create',
+                'currentValue' => old('image_url', ''),
+                'label'        => 'Gambar Voucher (Opsional)',
+            ])
 
             <div class="grid gap-4 sm:grid-cols-2">
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Min. Order (Rp)</span></label>
-                    <input type="number" name="minimum_order_amount" value="{{ old('minimum_order_amount') }}" step="1" min="0" class="input input-bordered" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Batas Penggunaan</span></label>
-                    <input type="number" name="usage_limit" value="{{ old('usage_limit') }}" min="1" class="input input-bordered" placeholder="Tanpa batas" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Batas Per User</span></label>
-                    <input type="number" name="per_user_limit" value="{{ old('per_user_limit') }}" min="1" class="input input-bordered" placeholder="Tanpa batas" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Mulai</span></label>
-                    <input type="date" name="starts_at" value="{{ old('starts_at') }}" class="input input-bordered" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Berakhir</span></label>
-                    <input type="date" name="ends_at" value="{{ old('ends_at') }}" class="input input-bordered" />
-                </div>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Min. Order (Rp)</legend>
+                    <input type="number" name="minimum_order_amount" value="{{ old('minimum_order_amount') }}" step="1" min="0" class="input w-full" />
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Batas Penggunaan</legend>
+                    <input type="number" name="usage_limit" value="{{ old('usage_limit') }}" min="1" class="input w-full" placeholder="Tanpa batas" />
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Batas Per User</legend>
+                    <input type="number" name="per_user_limit" value="{{ old('per_user_limit') }}" min="1" class="input w-full" placeholder="Tanpa batas" />
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Mulai</legend>
+                    <input type="date" name="starts_at" value="{{ old('starts_at') }}" class="input w-full" />
+                </fieldset>
+                <fieldset class="fieldset">
+                    <legend class="fieldset-legend">Berakhir</legend>
+                    <input type="date" name="ends_at" value="{{ old('ends_at') }}" class="input w-full" />
+                </fieldset>
             </div>
 
             <div class="flex items-center gap-3">

@@ -33,7 +33,7 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request): RedirectResponse
     {
-        $data               = $request->safe()->except(['images']);
+        $data               = $request->safe()->except(['images', 'media_image_urls']);
         $data['slug']       = Str::slug($request->name) . '-' . Str::random(4);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active', true);
@@ -54,6 +54,20 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->filled('media_image_urls')) {
+            $fileCount = $request->hasFile('images') ? count($request->file('images')) : 0;
+            foreach (array_filter((array) $request->input('media_image_urls')) as $index => $url) {
+                $path = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
+                ProductImage::query()->create([
+                    'product_id' => $product->id,
+                    'path'       => $path,
+                    'alt_text'   => $product->name,
+                    'is_primary' => ($fileCount === 0 && $index === 0),
+                    'sort_order' => $fileCount + $index,
+                ]);
+            }
+        }
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Produk berhasil ditambahkan.');
     }
@@ -68,7 +82,7 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        $data               = $request->safe()->except(['images']);
+        $data               = $request->safe()->except(['images', 'media_image_urls']);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active');
 
@@ -84,6 +98,21 @@ class ProductController extends Controller
                     'alt_text'   => $product->name,
                     'is_primary' => $existingCount === 0 && $index === 0,
                     'sort_order' => $existingCount + $index,
+                ]);
+            }
+        }
+
+        if ($request->filled('media_image_urls')) {
+            $existingCount = $product->images()->count();
+            $fileCount = $request->hasFile('images') ? count($request->file('images')) : 0;
+            foreach (array_filter((array) $request->input('media_image_urls')) as $index => $url) {
+                $path = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
+                ProductImage::query()->create([
+                    'product_id' => $product->id,
+                    'path'       => $path,
+                    'alt_text'   => $product->name,
+                    'is_primary' => ($existingCount === 0 && $fileCount === 0 && $index === 0),
+                    'sort_order' => $existingCount + $fileCount + $index,
                 ]);
             }
         }

@@ -30,6 +30,17 @@ class HomeController extends Controller
             ->limit(4)
             ->get();
 
+        $featuredProducts = Product::query()
+            ->where('is_active', true)
+            ->where('is_featured', true)
+            ->with([
+                'category',
+                'images' => fn($q) => $q->where('is_primary', true)->limit(1),
+            ])
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
+
         $categories = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
@@ -39,6 +50,6 @@ class HomeController extends Controller
 
         $settings = Setting::query()->get()->keyBy('key');
 
-        return view('pages.landing', compact('sections', 'newArrivals', 'categories', 'settings'));
+        return view('pages.landing', compact('sections', 'newArrivals', 'featuredProducts', 'categories', 'settings'));
     }
 }

@@ -107,6 +107,26 @@ class SettingController extends Controller
             );
         }
 
+        // Sync Laravel's maintenance-mode file with the setting value
+        $downFile = storage_path('framework/down');
+        if ($request->boolean('maintenance_mode')) {
+            if (! file_exists($downFile)) {
+                file_put_contents($downFile, json_encode([
+                    'secret'   => null,
+                    'status'   => 503,
+                    'template' => null,
+                    'retry'    => null,
+                    'refresh'  => null,
+                    'redirect' => null,
+                    'message'  => '',
+                ]));
+            }
+        } else {
+            if (file_exists($downFile)) {
+                unlink($downFile);
+            }
+        }
+
         return redirect()->route('admin.settings.index')
             ->with('success', 'Settings berhasil disimpan.');
     }

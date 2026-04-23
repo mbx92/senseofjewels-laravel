@@ -28,8 +28,10 @@ class ProductRequest extends FormRequest
             'weight'            => ['nullable', 'numeric', 'min:0'],
             'is_featured'       => ['boolean'],
             'is_active'         => ['boolean'],
-            'images'            => ['nullable', 'array', 'max:8'],
-            'images.*'          => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'images'              => ['nullable', 'array', 'max:8'],
+            'images.*'            => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'media_image_urls'    => ['nullable', 'array', 'max:8'],
+            'media_image_urls.*'  => ['nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -22,6 +22,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderTrackingController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
@@ -44,20 +45,44 @@ Route::post('/cart/items', [CartController::class, 'store'])->name('cart.store')
 Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
+// Payment — webhook excluded from CSRF via bootstrap/app.php
+Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
+Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
+Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
+
 Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::post('/checkout/apply-voucher', [CheckoutController::class, 'applyVoucher'])->name('checkout.apply-voucher');
 
+    // Payment — token generation & payment page (auth required)
+    Route::post('/payment/token', [PaymentController::class, 'token'])->name('payment.token');
+    Route::post('/payment/mock-simulate', [PaymentController::class, 'mockSimulate'])->name('payment.mock-simulate');
+    Route::get('/payment/{orderNumber}', [PaymentController::class, 'show'])->name('payment.show');
+
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+
+    // Account area
+    Route::get('/account/tracking', function () {
+        $orders = \App\Models\Order::where('user_id', auth()->id())
+            ->orderByDesc('created_at')
+            ->take(20)
+            ->get();
+        return view('account.tracking', compact('orders'));
+    })->name('account.tracking');
+
+    Route::get('/account/reviews', function () {
+        return view('account.reviews');
+    })->name('account.reviews');
 });
 
 Route::match(['get', 'post'], '/orders/{orderNumber}/tracking', [OrderTrackingController::class, 'show'])
     ->name('orders.track');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('orders.index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('guest')->prefix('admin')->name('admin.')->group(function () {

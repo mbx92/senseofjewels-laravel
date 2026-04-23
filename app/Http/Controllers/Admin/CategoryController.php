@@ -38,6 +38,9 @@ class CategoryController extends Controller
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $request->file('image')->store('images/categories', 'public');
+        } elseif ($request->filled('image_url')) {
+            $url = $request->input('image_url');
+            $data['image_path'] = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
         }
 
         Category::query()->create($data);
@@ -68,6 +71,9 @@ class CategoryController extends Controller
                 Storage::disk('public')->delete($category->image_path);
             }
             $data['image_path'] = $request->file('image')->store('images/categories', 'public');
+        } elseif ($request->filled('image_url')) {
+            $url = $request->input('image_url');
+            $data['image_path'] = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
         }
 
         $category->update($data);

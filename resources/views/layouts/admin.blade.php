@@ -13,6 +13,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('partials.dynamic-theme')
+        @stack('styles')
     </head>
     <body class="font-sans antialiased">
         <div class="drawer lg:drawer-open">
