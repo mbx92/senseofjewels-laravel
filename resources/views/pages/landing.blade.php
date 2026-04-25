@@ -197,8 +197,16 @@
                          class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
                     @else
-                    <div class="absolute inset-0 bg-gradient-to-br from-neutral via-neutral/80 to-base-300 group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-neutral via-neutral/80 to-base-300 transition-transform duration-700 group-hover:scale-105"></div>
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_60%,rgba(191,160,84,0.25),transparent_55%)]"></div>
+                    {{-- Decorative pattern --}}
+                    <div class="absolute inset-0 opacity-5" style="background-image: repeating-linear-gradient(45deg, #BFA054 0, #BFA054 1px, transparent 0, transparent 50%); background-size: 20px 20px;"></div>
+                    {{-- Placeholder icon --}}
+                    <div class="absolute right-8 top-1/2 -translate-y-1/2 opacity-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="w-28 h-28 text-primary fill-current">
+                            <path d="M32 6 L8 22 L14 42 H50 L56 22 Z M32 6 L20 22 H44 Z M14 42 L18 56 H46 L50 42 Z"/>
+                        </svg>
+                    </div>
                     @endif
 
                     {{-- Content --}}
