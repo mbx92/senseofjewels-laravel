@@ -4,7 +4,7 @@
 <div class="space-y-8">
 
     <div class="space-y-1">
-        <a href="{{ route('orders.index') }}" class="text-[10px] uppercase tracking-[0.18em] font-semibold text-base-content/40 hover:text-primary transition-colors">← Orders</a>
+        <a href="{{ route('orders.index') }}" class="text-[10px] uppercase tracking-[0.18em] font-semibold text-base-content/40 hover:text-primary transition-colors">← {{ __('Back to Orders') }}</a>
         <div class="flex items-end justify-between gap-4 flex-wrap">
             <h1 class="display-font text-3xl text-base-content font-normal">{{ $order->order_number }}</h1>
             <span class="text-xs text-base-content/50 pb-1">{{ $order->placed_at?->format('d M Y') }}</span>
@@ -39,10 +39,10 @@
         {{-- Order Info --}}
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                <h2 class="card-title text-base">Informasi Pesanan</h2>
+                <h2 class="card-title text-base">{{ __('Order Information') }}</h2>
                 <div class="text-sm space-y-1">
                     <div class="flex justify-between">
-                        <span class="text-base-content/60">Tanggal</span>
+                        <span class="text-base-content/60">{{ __('Date') }}</span>
                         <span>{{ $order->placed_at?->format('d M Y, H:i') }}</span>
                     </div>
                     <div class="flex justify-between">
@@ -50,12 +50,12 @@
                         <span class="badge badge-sm capitalize">{{ $order->status }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-base-content/60">Pembayaran</span>
+                        <span class="text-base-content/60">{{ __('Payment') }}</span>
                         <span class="badge badge-sm capitalize">{{ $order->payment_status }}</span>
                     </div>
                     @if ($order->payment)
                     <div class="flex justify-between">
-                        <span class="text-base-content/60">Metode</span>
+                        <span class="text-base-content/60">{{ __('Method') }}</span>
                         <span class="capitalize">{{ $order->payment->provider }}</span>
                     </div>
                     @endif
@@ -66,7 +66,7 @@
         {{-- Shipping Address --}}
         <div class="card bg-base-100 shadow-sm">
             <div class="card-body">
-                <h2 class="card-title text-base">Alamat Pengiriman</h2>
+                <h2 class="card-title text-base">{{ __('Shipping Address') }}</h2>
                 @if ($order->shipping_address)
                     <div class="space-y-1 text-sm">
                         <p class="font-medium">{{ $order->customer_name }}</p>
@@ -87,15 +87,15 @@
     {{-- Items --}}
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
-            <h2 class="card-title text-base">Item Pesanan</h2>
+            <h2 class="card-title text-base">{{ __('Order Items') }}</h2>
             <div class="overflow-x-auto">
                 <table class="table table-sm table-zebra">
                     <thead>
                         <tr>
-                            <th>Produk</th>
+                            <th>{{ __('Product') }}</th>
                             <th class="text-right">Qty</th>
-                            <th class="text-right">Harga</th>
-                            <th class="text-right">Subtotal</th>
+                            <th class="text-right">{{ __('Price') }}</th>
+                            <th class="text-right">{{ __('Subtotal') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -106,8 +106,8 @@
                                     <div class="text-xs text-base-content/50">{{ $item->product_sku }}</div>
                                 </td>
                                 <td class="text-right">{{ $item->quantity }}</td>
-                                <td class="text-right">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                                <td class="text-right font-semibold">Rp {{ number_format($item->total, 0, ',', '.') }}</td>
+                                <td class="text-right">@money($item->unit_price)</td>
+                                <td class="text-right font-semibold">@money($item->total)</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -119,23 +119,23 @@
                 <div class="text-sm space-y-1 min-w-48">
                     <div class="flex justify-between">
                         <span class="text-base-content/60">Subtotal</span>
-                        <span>Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        <span>@money($order->subtotal)</span>
                     </div>
                     @if ($order->discount_total > 0)
                         <div class="flex justify-between text-success">
-                            <span>Diskon</span>
-                            <span>- Rp {{ number_format($order->discount_total, 0, ',', '.') }}</span>
+                            <span>{{ __('Discount') }}</span>
+                            <span>- @money($order->discount_total)</span>
                         </div>
                     @endif
                     @if ($order->shipping_total > 0)
                         <div class="flex justify-between">
-                            <span class="text-base-content/60">Ongkir</span>
-                            <span>Rp {{ number_format($order->shipping_total, 0, ',', '.') }}</span>
+                            <span class="text-base-content/60">{{ __('Shipping') }}</span>
+                            <span>@money($order->shipping_total)</span>
                         </div>
                     @endif
                     <div class="mt-1 flex justify-between border-t border-base-300 pt-1 text-base font-bold">
                         <span>Total</span>
-                        <span>Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                        <span>@money($order->total)</span>
                     </div>
                 </div>
             </div>

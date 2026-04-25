@@ -33,11 +33,12 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls']);
+        $data               = $request->safe()->except(['images', 'media_image_urls', 'specifications_text']);
         $data['slug']       = Str::slug($request->name) . '-' . Str::random(4);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active', true);
         $data['published_at'] = $data['is_active'] ? now() : null;
+        $data['specifications'] = $this->parseSpecifications($request->input('specifications_text'));
 
         $product = Product::query()->create($data);
 
@@ -82,9 +83,10 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls']);
+        $data               = $request->safe()->except(['images', 'media_image_urls', 'specifications_text']);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active');
+        $data['specifications'] = $this->parseSpecifications($request->input('specifications_text'));
 
         $product->update($data);
 
@@ -146,5 +148,32 @@ class ProductController extends Controller
         }
 
         return back()->with('success', 'Gambar dihapus.');
+    }
+
+    private function parseSpecifications(?string $specificationsText): ?array
+    {
+        if (! $specificationsText) {
+            return null;
+        }
+
+        $specifications = [];
+        foreach (preg_split('/\r\n|\r|\n/', trim($specificationsText)) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            [$label, $value] = array_pad(explode(':', $line, 2), 2, '');
+            $label = trim($label);
+            $value = trim($value);
+
+            if ($label === '' || $value === '') {
+                continue;
+            }
+
+            $specifications[$label] = $value;
+        }
+
+        return $specifications !== [] ? $specifications : null;
     }
 }

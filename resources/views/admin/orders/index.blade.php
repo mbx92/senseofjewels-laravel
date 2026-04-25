@@ -10,25 +10,27 @@
 </div>
 
 {{-- Filters --}}
-<form method="GET" class="flex flex-wrap gap-3">
+<form method="GET" class="flex flex-wrap gap-3"
+    x-data="{ timer: null, autoSubmit(delay = 350) { clearTimeout(this.timer); this.timer = setTimeout(() => this.$refs.form.submit(), delay); } }"
+    x-ref="form">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="No. Pesanan / Nama / Email"
+        @input="autoSubmit()"
         class="input input-bordered input-sm w-56" />
 
-    <select name="status" class="select select-bordered select-sm">
+    <select name="status" @change="autoSubmit(0)" class="select select-bordered select-sm">
         <option value="">Semua Status</option>
         @foreach (['pending','processing','shipped','delivered','completed','cancelled'] as $s)
             <option value="{{ $s }}" @selected(request('status') === $s)>{{ ucfirst($s) }}</option>
         @endforeach
     </select>
 
-    <select name="payment_status" class="select select-bordered select-sm">
+    <select name="payment_status" @change="autoSubmit(0)" class="select select-bordered select-sm">
         <option value="">Semua Pembayaran</option>
         @foreach (['pending','paid','failed','refunded'] as $p)
             <option value="{{ $p }}" @selected(request('payment_status') === $p)>{{ ucfirst($p) }}</option>
         @endforeach
     </select>
 
-    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
     @if (request()->hasAny(['search','status','payment_status']))
         <a href="{{ route('admin.orders.index') }}" class="btn btn-ghost btn-sm">Reset</a>
     @endif

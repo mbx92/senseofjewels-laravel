@@ -17,17 +17,19 @@
     </div>
 
     {{-- Filter bar --}}
-    <form method="GET" action="{{ route('admin.media.index') }}" class="flex items-center gap-4 flex-wrap">
+    <form method="GET" action="{{ route('admin.media.index') }}" class="flex items-center gap-4 flex-wrap"
+          x-data="{ timer: null, autoSubmit(delay = 350) { clearTimeout(this.timer); this.timer = setTimeout(() => this.$refs.form.submit(), delay); } }"
+          x-ref="form">
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Search filename, alt text..."
+               @input="autoSubmit()"
                class="border-b border-base-content/20 bg-transparent py-1.5 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-primary transition-colors w-52">
-        <select name="collection" class="border-b border-base-content/20 bg-transparent py-1.5 text-xs focus:outline-none focus:border-primary transition-colors">
+        <select name="collection" @change="autoSubmit(0)" class="border-b border-base-content/20 bg-transparent py-1.5 text-xs focus:outline-none focus:border-primary transition-colors">
             <option value="">All Collections</option>
             @foreach($collections as $col)
                 <option value="{{ $col }}" {{ request('collection') === $col ? 'selected' : '' }}>{{ ucfirst($col) }}</option>
             @endforeach
         </select>
-        <button type="submit" class="text-[10px] uppercase tracking-widest border border-base-content/30 px-3 py-1.5 hover:bg-base-content hover:text-base-100 transition-colors">Filter</button>
         @if(request()->hasAny(['search', 'collection']))
         <a href="{{ route('admin.media.index') }}" class="text-[10px] uppercase tracking-widest text-base-content/40 hover:text-base-content">Reset</a>
         @endif

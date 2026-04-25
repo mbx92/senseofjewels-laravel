@@ -34,8 +34,11 @@
                             </div>
                         @else
                             <div class="avatar placeholder">
-                                <div class="bg-neutral text-neutral-content rounded-full w-10">
-                                    <span class="text-sm">{{ strtoupper(substr($testimonial->name, 0, 1)) }}</span>
+                                <div class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
                                 </div>
                             </div>
                         @endif

@@ -13,9 +13,11 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('partials.dynamic-theme')
+        @livewireStyles
         @stack('styles')
     </head>
     <body class="font-sans antialiased">
+        <div id="nav-progress" class="pointer-events-none fixed left-0 top-0 z-[100] h-[2px] w-0 bg-primary opacity-0 transition-opacity duration-200"></div>
         <div class="drawer lg:drawer-open">
             <input id="admin-drawer" type="checkbox" class="drawer-toggle" />
 
@@ -53,7 +55,7 @@
                                 </span>
                             </label>
                             <ul tabindex="0" class="dropdown-content z-50 mt-3 w-44 bg-base-100 border border-base-300 shadow-lg py-1">
-                                <li><a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 text-[11px] uppercase tracking-widest text-base-content/70 hover:text-base-content hover:bg-base-200 transition-colors">Profile</a></li>
+                                <li><a href="{{ route('profile.edit') }}" wire:navigate class="block px-4 py-2.5 text-[11px] uppercase tracking-widest text-base-content/70 hover:text-base-content hover:bg-base-200 transition-colors">Profile</a></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
@@ -101,7 +103,7 @@
 
                     {{-- Logo --}}
                     <div class="px-6 py-6 border-b border-white/10">
-                        <a href="{{ route('admin.dashboard') }}" class="block">
+                        <a href="{{ route('admin.dashboard') }}" wire:navigate class="block">
                             <p class="display-font text-2xl text-primary tracking-wide leading-none">Sense of Jewels</p>
                             <p class="text-[9px] uppercase tracking-[0.25em] text-neutral-content/40 mt-1.5">Admin Dashboard</p>
                         </a>
@@ -110,7 +112,7 @@
                     {{-- Navigation --}}
                     <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-0.5">
 
-                        <a href="{{ route('admin.dashboard') }}"
+                        <a href="{{ route('admin.dashboard') }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 rounded-none text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                             Dashboard
@@ -130,7 +132,7 @@
                             ];
                         @endphp
                         @foreach($landingLinks as $link)
-                        <a href="{{ route($link['route']) }}"
+                        <a href="{{ route($link['route']) }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs($link['match']) ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             {{ $link['label'] }}
                         </a>
@@ -149,7 +151,7 @@
                             ];
                         @endphp
                         @foreach($commerceLinks as $link)
-                        <a href="{{ route($link['route']) }}"
+                        <a href="{{ route($link['route']) }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs($link['match']) ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             {{ $link['label'] }}
                         </a>
@@ -157,22 +159,26 @@
 
                         <p class="px-3 pt-5 pb-2 text-[9px] uppercase tracking-[0.25em] text-neutral-content/30">System</p>
                         @can('manage users')
-                        <a href="{{ route('admin.users.index') }}"
+                        <a href="{{ route('admin.users.index') }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.users*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             Users
                         </a>
-                        <a href="{{ route('admin.roles.index') }}"
+                        <a href="{{ route('admin.roles.index') }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.roles*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             Roles
                         </a>
                         @endcan
-                        <a href="{{ route('admin.media.index') }}"
+                        <a href="{{ route('admin.media.index') }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.media*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             Media Library
                         </a>
-                        <a href="{{ route('admin.settings.index') }}"
+                        <a href="{{ route('admin.settings.index') }}" wire:navigate
                            class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.settings*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
                             Settings
+                        </a>
+                        <a href="{{ route('admin.integrations.index') }}" wire:navigate
+                           class="flex items-center gap-3 px-3 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors {{ request()->routeIs('admin.integrations*') ? 'bg-primary/20 text-primary' : 'text-neutral-content/60 hover:text-neutral-content hover:bg-white/5' }}">
+                            Integrations
                         </a>
                     </nav>
 
@@ -187,6 +193,41 @@
                 </aside>
             </div>
         </div>
+        @livewireScripts
+        <script>
+            (() => {
+                const bar = document.getElementById('nav-progress');
+                if (!bar) return;
+
+                let timer = null;
+                let progress = 0;
+
+                const start = () => {
+                    clearInterval(timer);
+                    progress = 8;
+                    bar.style.opacity = '1';
+                    bar.style.width = progress + '%';
+
+                    timer = setInterval(() => {
+                        progress = Math.min(progress + (100 - progress) * 0.08, 92);
+                        bar.style.width = progress + '%';
+                    }, 120);
+                };
+
+                const finish = () => {
+                    clearInterval(timer);
+                    bar.style.width = '100%';
+                    setTimeout(() => {
+                        bar.style.opacity = '0';
+                        bar.style.width = '0';
+                    }, 180);
+                };
+
+                document.addEventListener('livewire:navigate', start);
+                document.addEventListener('livewire:navigating', start);
+                document.addEventListener('livewire:navigated', finish);
+            })();
+        </script>
         @stack('scripts')
     </body>
 </html>

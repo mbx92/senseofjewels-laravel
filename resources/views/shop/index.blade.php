@@ -17,15 +17,19 @@
             @endforeach
         </div>
 
-        <form method="GET" action="{{ route('shop.index') }}" class="w-full md:w-64">
+        <form method="GET" action="{{ route('shop.index') }}" class="w-full md:w-64"
+              x-data="{ timer: null, autoSubmit(delay = 350) { clearTimeout(this.timer); this.timer = setTimeout(() => this.$refs.form.submit(), delay); } }"
+              x-ref="form">
             @if(request('category'))
                 <input type="hidden" name="category" value="{{ request('category') }}">
             @endif
             <div class="relative">
-                <input type="text" name="search" value="{{ request('search') }}" class="w-full border-b border-base-content/20 bg-transparent py-2 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-base-content transition-colors" placeholder="{{ strtoupper(__('Search Collection...')) }}">
-                <button type="submit" class="absolute right-0 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-base-content">
+                <input type="text" name="search" value="{{ request('search') }}" @input="autoSubmit()"
+                       class="w-full border-b border-base-content/20 bg-transparent py-2 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-base-content transition-colors"
+                       placeholder="{{ strtoupper(__('Search Collection...')) }}">
+                <span class="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-base-content/40">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                </button>
+                </span>
             </div>
         </form>
     </div>
@@ -78,11 +82,11 @@
                         <div class="font-light text-base-content/80 mt-1">
                             @if($product->discounted_price)
                                 @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
-                                <span class="text-error font-medium"><span class="text-xs">Rp</span> {{ number_format($product->discounted_price, 0, ',', '.') }}</span>
-                                <span class="text-xs text-base-content/40 line-through ml-1">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                                <span class="text-error font-medium">@money($product->discounted_price)</span>
+                                <span class="text-xs text-base-content/40 line-through ml-1">@money($product->price)</span>
                                 <span class="ml-1 bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span>
                             @else
-                                <span class="text-xs">Rp</span> {{ number_format($product->price, 0, ',', '.') }}
+                                @money($product->price)
                             @endif
                         </div>
                     </div>

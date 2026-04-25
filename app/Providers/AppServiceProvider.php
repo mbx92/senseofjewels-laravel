@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Cart;
 use App\Models\Setting;
+use App\Services\CurrencyService;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -14,6 +16,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Blade::directive('money', function ($expression) {
+            return "<?php echo app('" . CurrencyService::class . "')->format($expression); ?>";
+        });
+
         // Share theme color settings to all views once DB is ready
         View::composer('*', function ($view) {
             static $themeColors = null;

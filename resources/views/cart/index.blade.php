@@ -6,10 +6,10 @@
     {{-- Header --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-1">
-            <h1 class="display-font text-4xl text-base-content">Keranjang Belanja</h1>
-            <p class="text-sm text-base-content/55">Tinjau produk pilihan Anda sebelum melanjutkan ke pembayaran.</p>
+            <h1 class="display-font text-4xl text-base-content">{{ __('Shopping Cart') }}</h1>
+            <p class="text-sm text-base-content/55">{{ __('Review your selected products before proceeding to payment.') }}</p>
         </div>
-        <a href="{{ route('shop.index') }}" class="btn btn-outline btn-sm self-start sm:self-auto">← Lanjut Belanja</a>
+        <a href="{{ route('shop.index') }}" class="btn btn-outline btn-sm self-start sm:self-auto">← {{ __('Continue Shopping') }}</a>
     </div>
 
     @if(session('status'))
@@ -46,21 +46,21 @@
                                     @csrf @method('PATCH')
                                     <input type="number" name="quantity" min="1" value="{{ $item->quantity }}"
                                         class="input input-bordered input-sm w-16 text-center" />
-                                    <button class="btn btn-ghost btn-xs text-base-content/50 hover:text-base-content" title="Update">
+                                    <button class="btn btn-ghost btn-xs text-base-content/50 hover:text-base-content" title="{{ __('Update') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                                     </button>
                                 </form>
                             </td>
                             <td class="text-right whitespace-nowrap text-sm text-base-content/70">
-                                Rp {{ number_format($item->unit_price, 0, ',', '.') }}
+                                @money($item->unit_price)
                             </td>
                             <td class="text-right whitespace-nowrap font-medium">
-                                Rp {{ number_format($item->line_total, 0, ',', '.') }}
+                                @money($item->line_total)
                             </td>
                             <td class="text-right">
                                 <form method="POST" action="{{ route('cart.destroy', $item) }}">
                                     @csrf @method('DELETE')
-                                    <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" title="Hapus">
+                                    <button class="btn btn-ghost btn-xs text-error hover:bg-error/10" title="{{ __('Delete') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -71,8 +71,8 @@
                             <td colspan="5">
                                 <div class="py-16 text-center space-y-3">
                                     <span class="block text-5xl opacity-20">🛒</span>
-                                    <p class="text-base-content/50">Keranjang Anda kosong.</p>
-                                    <a href="{{ route('shop.index') }}" class="btn btn-primary btn-sm">Mulai Belanja</a>
+                                    <p class="text-base-content/50">{{ __('Your cart is empty.') }}</p>
+                                    <a href="{{ route('shop.index') }}" class="btn btn-primary btn-sm">{{ __('Start Shopping') }}</a>
                                 </div>
                             </td>
                         </tr>
@@ -85,32 +85,50 @@
         {{-- Summary --}}
         <div class="card border border-base-300 bg-base-100 lg:sticky lg:top-24">
             <div class="card-body gap-4">
-                <h2 class="card-title text-base font-semibold">Ringkasan</h2>
+                <h2 class="card-title text-base font-semibold">{{ __('Summary') }}</h2>
 
+                @php
+                    $productDiscountTotal = $cart->items->sum(function ($item) {
+                        $basePrice = $item->product?->price ?? $item->unit_price;
+                        return max(0, ($basePrice - $item->unit_price) * $item->quantity);
+                    });
+                @endphp
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between text-base-content/60">
-                        <span>Subtotal</span>
-                        <span>Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
+                        <span>{{ __('Subtotal') }}</span>
+                        <span>@money($cart->subtotal)</span>
                     </div>
+                    @if($productDiscountTotal > 0)
+                    <div class="flex justify-between text-success">
+                        <span>Diskon Produk</span>
+                        <span>- @money($productDiscountTotal)</span>
+                    </div>
+                    @endif
                     @if($cart->discount_total > 0)
                     <div class="flex justify-between text-success">
-                        <span>Diskon</span>
-                        <span>- Rp {{ number_format($cart->discount_total, 0, ',', '.') }}</span>
+                        <span>Diskon Voucher</span>
+                        <span>- @money($cart->discount_total)</span>
+                    </div>
+                    @endif
+                    @if($productDiscountTotal + $cart->discount_total > 0)
+                    <div class="flex justify-between text-base-content/70 text-xs pt-1">
+                        <span>Total Hemat</span>
+                        <span>@money($productDiscountTotal + $cart->discount_total)</span>
                     </div>
                     @endif
                     <div class="divider my-1"></div>
                     <div class="flex justify-between font-semibold text-base">
-                        <span>Total</span>
-                        <span>Rp {{ number_format($cart->total, 0, ',', '.') }}</span>
+                        <span>{{ __('Total') }}</span>
+                        <span>@money($cart->total)</span>
                     </div>
                 </div>
 
                 <div class="card-actions pt-2">
                     @if ($cart->items->isEmpty())
-                    <button class="btn btn-primary btn-block" disabled>Checkout</button>
+                    <button class="btn btn-primary btn-block" disabled>{{ __('Checkout') }}</button>
                     @else
                     <a href="{{ route('checkout.index') }}" class="btn btn-primary btn-block">
-                        Lanjut ke Checkout →
+                        {{ __('Proceed to Checkout') }} →
                     </a>
                     @endif
                 </div>

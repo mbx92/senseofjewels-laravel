@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\Voucher;
 use App\Services\CartService;
 use App\Services\DiscountService;
@@ -21,7 +22,15 @@ class CheckoutController extends Controller
         protected DiscountService $discountService,
     ) {}
 
-    public function index(Request $request): View
+    private function midtransActive(): bool
+    {
+        $enabled = Setting::boolOf('midtrans_enabled', true);
+        $configured = ! empty(config('midtrans.server_key')) && ! empty(config('midtrans.client_key'));
+
+        return $enabled && $configured;
+    }
+
+    public function index(Request $request): View|RedirectResponse
     {
         $cart = $this->cartService->getCart();
 
@@ -103,11 +112,12 @@ class CheckoutController extends Controller
             voucherId: $voucherId,
         );
 
-        // Create payment record for Midtrans
+        // Create payment record for active provider
+        $paymentProvider = $this->midtransActive() ? 'midtrans' : 'manual';
         Payment::query()->firstOrCreate(
             ['order_id' => $order->id],
             [
-                'provider' => 'midtrans',
+                'provider' => $paymentProvider,
                 'amount'   => $order->total,
                 'currency' => $order->currency ?? 'IDR',
                 'status'   => 'pending',
@@ -121,6 +131,8 @@ class CheckoutController extends Controller
         session(['last_order_number' => $order->order_number]);
 
         return redirect()->route('payment.show', $order->order_number)
-            ->with('status', 'Order berhasil dibuat! Silakan selesaikan pembayaran.');
+            ->with('status', $this->midtransActive()
+                ? 'Order berhasil dibuat! Silakan selesaikan pembayaran.'
+                : 'Order berhasil dibuat. Silakan lanjutkan ke instruksi pembayaran manual.');
     }
 }

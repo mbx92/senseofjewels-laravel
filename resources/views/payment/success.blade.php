@@ -13,31 +13,31 @@
 
         {{-- Heading --}}
         <div class="space-y-2">
-            <h1 class="display-font text-4xl text-base-content">Pembayaran Berhasil!</h1>
+            <h1 class="display-font text-4xl text-base-content">{{ __('Payment Successful!') }}</h1>
             @if($order)
             <p class="text-base-content/60">
-                Order <span class="font-medium text-base-content">#{{ $order->order_number }}</span> sedang diproses.
+                {{ __('Order') }} <span class="font-medium text-base-content">#{{ $order->order_number }}</span> {{ __('is being processed.') }}
             </p>
             @else
-            <p class="text-base-content/60">Pembayaran Anda telah kami terima.</p>
+            <p class="text-base-content/60">{{ __('Your payment has been received.') }}</p>
             @endif
         </div>
 
         {{-- Alert --}}
         <div class="alert alert-success text-sm text-left">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>Konfirmasi pembayaran dikirim ke email Anda. Pesanan akan segera diproses.</span>
+            <span>{{ __('Payment confirmation has been sent to your email. Your order will be processed shortly.') }}</span>
         </div>
 
         {{-- Actions --}}
         <div class="flex flex-col sm:flex-row gap-3 justify-center">
             @if($order)
             <a href="{{ route('orders.show', $order->order_number) }}" class="btn btn-primary">
-                Lihat Detail Order
+                {{ __('View Order Details') }}
             </a>
             @endif
             <a href="{{ route('shop.index') }}" class="btn btn-outline">
-                Lanjut Belanja
+                {{ __('Continue Shopping') }}
             </a>
         </div>
     </div>

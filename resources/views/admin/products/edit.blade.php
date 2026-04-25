@@ -56,6 +56,14 @@
                         <legend class="fieldset-legend">Deskripsi Lengkap</legend>
                         <textarea id="description" name="description" rows="6" class="textarea w-full">{{ old('description', $product->description) }}</textarea>
                     </fieldset>
+
+                    <fieldset class="fieldset">
+                        <legend class="fieldset-legend">Spesifikasi</legend>
+                        <textarea name="specifications_text" rows="5" class="textarea w-full @error('specifications_text') textarea-error @enderror"
+                                  placeholder="Material: Sterling Silver 925&#10;Stone: Zircon&#10;Finish: Polished">{{ old('specifications_text', collect($product->specifications ?? [])->map(fn ($value, $label) => $label . ': ' . $value)->implode("\n")) }}</textarea>
+                        <p class="fieldset-label">Satu baris per spesifikasi dengan format: Label: Nilai</p>
+                        @error('specifications_text')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
+                    </fieldset>
                 </div>
             </div>
 
@@ -110,10 +118,6 @@
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Harga Jual (Rp) <span class="text-error">*</span></legend>
                         <input type="number" name="price" value="{{ old('price', $product->price) }}" step="1" min="0" class="input w-full" required />
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Harga Coret (Rp)</legend>
-                        <input type="number" name="compare_at_price" value="{{ old('compare_at_price', $product->compare_at_price) }}" step="1" min="0" class="input w-full" />
                     </fieldset>
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Harga Modal (Rp)</legend>

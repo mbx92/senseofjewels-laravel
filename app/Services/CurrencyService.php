@@ -31,12 +31,13 @@ class CurrencyService
     /**
      * Format an IDR amount in the customer's preferred currency.
      */
-    public function format(int|float $amountIdr, ?string $currencyCode = null): string
+    public function format(int|float|null $amountIdr, ?string $currencyCode = null): string
     {
         $code = $currencyCode ?? $this->current();
         $cfg  = self::CURRENCIES[$code] ?? self::CURRENCIES['IDR'];
 
-        $converted = $amountIdr * $cfg['rate'];
+        $safeAmount = $amountIdr ?? 0;
+        $converted = $safeAmount * $cfg['rate'];
 
         return $cfg['symbol'] . ' ' . number_format($converted, $cfg['decimals'], '.', ',');
     }

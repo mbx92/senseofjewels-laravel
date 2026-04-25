@@ -1,20 +1,50 @@
 @extends('layouts.admin')
 
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-container { border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem; }
+    .ql-toolbar { border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
+    .ql-editor { min-height: 220px; font-size: 14px; }
+</style>
+@endpush
+
 @push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!document.querySelector('#portfolio-description')) {
-            return;
+    function initPortfolioEditor() {
+        const textarea = document.getElementById('portfolio-description');
+        if (!textarea || textarea.dataset.quillMounted === '1') return;
+
+        textarea.dataset.quillMounted = '1';
+        const wrapper = document.createElement('div');
+        textarea.parentNode.insertBefore(wrapper, textarea);
+        textarea.style.display = 'none';
+
+        const quill = new Quill(wrapper, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link'],
+                    ['clean'],
+                ],
+            },
+        });
+
+        if (textarea.value) {
+            quill.root.innerHTML = textarea.value;
         }
 
-        tinymce.init({
-            selector: '#portfolio-description',
-            plugins: 'lists link code',
-            toolbar: 'undo redo | bold italic | bullist numlist | link | code',
-            height: 250,
+        const form = textarea.closest('form');
+        form?.addEventListener('submit', () => {
+            textarea.value = quill.root.innerHTML;
         });
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initPortfolioEditor);
+    document.addEventListener('livewire:navigated', initPortfolioEditor);
 </script>
 @endpush
 

@@ -12,6 +12,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Nunito:wght@300;400;500&display=swap" rel="stylesheet">
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @livewireStyles
     </head>
     <body class="font-sans antialiased min-h-screen bg-base-200">
 
@@ -26,7 +27,7 @@
 
                 {{-- Top logo --}}
                 <div class="relative z-10">
-                    <a href="{{ route('home') }}" class="display-font text-3xl text-white/90 tracking-wide hover:text-primary transition-colors">
+                    <a href="{{ route('home') }}" wire:navigate class="display-font text-3xl text-white/90 tracking-wide hover:text-primary transition-colors">
                         Sense of Jewels
                     </a>
                 </div>
@@ -46,8 +47,8 @@
 
                 {{-- Bottom links --}}
                 <div class="relative z-10 flex items-center gap-6">
-                    <a href="{{ route('home') }}" class="text-white/50 hover:text-white text-[10px] uppercase tracking-widest transition-colors">← Back to Site</a>
-                    <a href="{{ route('shop.index') }}" class="text-white/50 hover:text-white text-[10px] uppercase tracking-widest transition-colors">Shop</a>
+                    <a href="{{ route('home') }}" wire:navigate class="text-white/50 hover:text-white text-[10px] uppercase tracking-widest transition-colors">← Back to Site</a>
+                    <a href="{{ route('shop.index') }}" wire:navigate class="text-white/50 hover:text-white text-[10px] uppercase tracking-widest transition-colors">Shop</a>
                 </div>
             </div>
 
@@ -56,7 +57,7 @@
 
                 {{-- Mobile logo --}}
                 <div class="lg:hidden mb-10 text-center">
-                    <a href="{{ route('home') }}" class="display-font text-3xl text-base-content">Sense of Jewels</a>
+                    <a href="{{ route('home') }}" wire:navigate class="display-font text-3xl text-base-content">Sense of Jewels</a>
                 </div>
 
                 <div class="w-full max-w-sm">
@@ -70,5 +71,6 @@
 
         </div>
 
+        @livewireScripts
     </body>
 </html>

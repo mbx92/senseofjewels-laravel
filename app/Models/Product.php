@@ -18,7 +18,6 @@ class Product extends Model
         'description',
         'specifications',
         'price',
-        'compare_at_price',
         'cost_price',
         'stock',
         'min_stock_alert',

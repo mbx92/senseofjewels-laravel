@@ -10,19 +10,19 @@
             <h1 class="display-font text-4xl text-base-content font-normal">Users</h1>
         </div>
 
-        <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-3">
+        <form method="GET" action="{{ route('admin.users.index') }}" class="flex items-center gap-3"
+              x-data="{ timer: null, autoSubmit(delay = 350) { clearTimeout(this.timer); this.timer = setTimeout(() => this.$refs.form.submit(), delay); } }"
+              x-ref="form">
             <input type="text" name="search" value="{{ request('search') }}"
                    placeholder="Search name / email..."
+                   @input="autoSubmit()"
                    class="border-b border-base-content/20 bg-transparent py-1.5 text-xs placeholder:text-base-content/40 focus:outline-none focus:border-primary transition-colors w-48">
-            <select name="role" class="border-b border-base-content/20 bg-transparent py-1.5 text-xs focus:outline-none focus:border-primary transition-colors">
+            <select name="role" @change="autoSubmit(0)" class="border-b border-base-content/20 bg-transparent py-1.5 text-xs focus:outline-none focus:border-primary transition-colors">
                 <option value="">All Roles</option>
                 @foreach($roles as $role)
                     <option value="{{ $role->name }}" {{ request('role') === $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="text-[10px] uppercase tracking-widest border border-base-content/30 px-3 py-1.5 hover:bg-base-content hover:text-base-100 transition-colors">
-                Filter
-            </button>
             @if(request()->hasAny(['search', 'role']))
                 <a href="{{ route('admin.users.index') }}" class="text-[10px] uppercase tracking-widest text-base-content/40 hover:text-base-content transition-colors">
                     Reset

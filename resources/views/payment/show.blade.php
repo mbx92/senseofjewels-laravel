@@ -6,7 +6,7 @@
     {{-- Header --}}
     <div class="space-y-1">
         <p class="text-xs uppercase tracking-[0.25em] text-primary">Order #{{ $order->order_number }}</p>
-        <h1 class="display-font text-4xl text-base-content">Selesaikan Pembayaran</h1>
+        <h1 class="display-font text-4xl text-base-content">{{ __('Complete Payment') }}</h1>
         <p class="text-sm text-base-content/55">Klik tombol di bawah untuk membuka halaman pembayaran Midtrans Snap.</p>
     </div>
 
@@ -28,7 +28,7 @@
                     </div>
                     <div>
                         <h2 class="font-semibold text-base">Total Pembayaran</h2>
-                        <p class="display-font text-3xl text-base-content">Rp {{ number_format($order->total, 0, ',', '.') }}</p>
+                        <p class="display-font text-3xl text-base-content">@money($order->total)</p>
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@
                         @click="pay()"
                         :disabled="loading">
                         <span class="loading loading-spinner loading-sm" x-show="loading"></span>
-                        <span x-text="loading ? 'Memproses...' : 'Bayar Sekarang'"></span>
+                        <span x-text="loading ? '{{ __('Processing...') }}' : '{{ __('Pay Now') }}'"></span>
                     </button>
 
                     <template x-if="errorMsg">
@@ -88,7 +88,7 @@
                             <p class="font-medium text-base-content truncate">{{ $item->product_name }}</p>
                             <p class="text-xs text-base-content/45 mt-0.5">Qty {{ $item->quantity }}</p>
                         </div>
-                        <span class="text-base-content/80 whitespace-nowrap">Rp {{ number_format($item->line_total, 0, ',', '.') }}</span>
+                        <span class="text-base-content/80 whitespace-nowrap">@money($item->total)</span>
                     </li>
                     @endforeach
                 </ul>
@@ -96,12 +96,12 @@
                     @if($order->discount_total > 0)
                     <div class="flex justify-between text-success">
                         <span>Diskon</span>
-                        <span>- Rp {{ number_format($order->discount_total, 0, ',', '.') }}</span>
+                        <span>- @money($order->discount_total)</span>
                     </div>
                     @endif
                     <div class="flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>Rp {{ number_format($order->total, 0, ',', '.') }}</span>
+                        <span>@money($order->total)</span>
                     </div>
                 </div>
             </div>

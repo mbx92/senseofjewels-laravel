@@ -54,7 +54,7 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
-        $settings = Setting::query()->get()->keyBy('key');
+        $settings = Setting::query()->pluck('value', 'key');
 
         foreach ($newArrivals as $p) {
             $p->discounted_price = $this->discountService->applyProductDiscount($p);

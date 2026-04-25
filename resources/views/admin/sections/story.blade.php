@@ -12,7 +12,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.story.update') }}" method="POST">
+<form action="{{ route('admin.story.update') }}" method="POST" class="pb-24">
     @csrf
     @method('PUT')
 
@@ -135,25 +135,21 @@
         </div>
     </div>
 
-    {{-- ── Visibility ── --}}
-    <div class="card bg-base-100 shadow-xl mb-24">
-        <div class="card-body">
-            <div class="form-control">
-                <label class="label cursor-pointer justify-start gap-3">
+    <div class="sticky bottom-0 z-30 bg-base-100/95 backdrop-blur border-t border-base-300 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] -mx-5 lg:-mx-8 px-5 lg:px-8">
+        <div class="max-w-5xl mx-auto px-6 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <label class="label cursor-pointer justify-start gap-4">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" value="1" class="checkbox checkbox-primary"
+                    <input type="checkbox" name="is_active" value="1" class="toggle toggle-primary"
                            {{ old('is_active', $section?->is_active ?? true) ? 'checked' : '' }}>
-                    <span class="label-text font-medium">Tampilkan section ini di halaman depan</span>
+                    <span class="label-text font-medium">Aktifkan story section</span>
                 </label>
+                <div class="flex gap-3">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost">Batal</a>
+                    <button type="submit" class="btn btn-primary">Simpan Semua Perubahan</button>
+                </div>
             </div>
         </div>
-    </div>
-
-    {{-- ── Sticky Save Bar ── --}}
-    <div class="btm-nav btm-nav-sm border-t border-base-300 bg-base-100 z-40"
-         style="position:sticky;bottom:0;left:0;right:0;height:auto;padding:12px 24px;display:flex;align-items:center;justify-content:flex-end;gap:12px;">
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost btn-sm">Batal</a>
-        <button type="submit" class="btn btn-primary btn-sm">Simpan Story Section</button>
     </div>
 
 </form>

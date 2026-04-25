@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Setting;
+use App\Services\DiscountService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CartController extends Controller
 {
+    public function __construct(protected DiscountService $discountService) {}
+
     public function index(Request $request): View
     {
         $cart = $this->currentCart($request)->load('items.product.images');
@@ -42,13 +46,18 @@ class CartController extends Controller
         ]);
 
         $newQuantity = ($item->exists ? $item->quantity : 0) + $quantity;
+        if ($this->inventoryEnabled() && $newQuantity > $product->stock) {
+            return back()->with('error', 'Stok tidak mencukupi untuk jumlah yang diminta.');
+        }
+
+        $unitPrice = $this->discountService->applyProductDiscount($product) ?? $product->price;
 
         $item->fill([
             'product_name' => $product->name,
             'product_sku' => $product->sku,
             'quantity' => $newQuantity,
-            'unit_price' => $product->price,
-            'line_total' => $newQuantity * $product->price,
+            'unit_price' => $unitPrice,
+            'line_total' => $newQuantity * $unitPrice,
         ]);
         $item->save();
 
@@ -67,9 +76,18 @@ class CartController extends Controller
 
         abort_unless($cartItem->cart_id === $cart->id, 404);
 
+        $product = $cartItem->product;
+        if ($this->inventoryEnabled() && $product && $validated['quantity'] > $product->stock) {
+            return back()->with('error', 'Stok tidak mencukupi untuk jumlah yang diminta.');
+        }
+        $unitPrice = $product
+            ? ($this->discountService->applyProductDiscount($product) ?? $product->price)
+            : $cartItem->unit_price;
+
         $cartItem->update([
             'quantity' => $validated['quantity'],
-            'line_total' => $validated['quantity'] * $cartItem->unit_price,
+            'unit_price' => $unitPrice,
+            'line_total' => $validated['quantity'] * $unitPrice,
         ]);
 
         $this->syncCartTotals($cart);
@@ -92,17 +110,62 @@ class CartController extends Controller
 
     protected function currentCart(Request $request): Cart
     {
+        $sessionId = $request->session()->getId();
+
+        if ($request->user()) {
+            $sessionCart = Cart::query()->where('session_id', $sessionId)->first();
+
+            if ($sessionCart) {
+                if (! $sessionCart->user_id) {
+                    $sessionCart->update(['user_id' => $request->user()->id]);
+                }
+
+                return $sessionCart;
+            }
+
+            $cart = Cart::query()->firstOrCreate(
+                ['user_id' => $request->user()->id],
+                ['session_id' => $sessionId, 'currency' => 'IDR'],
+            );
+
+            if ($cart->session_id !== $sessionId) {
+                $cart->update(['session_id' => $sessionId]);
+            }
+
+            return $cart;
+        }
+
         return Cart::query()->firstOrCreate(
-            ['session_id' => $request->session()->getId()],
-            [
-                'user_id' => $request->user()?->id,
-                'currency' => 'IDR',
-            ],
+            ['session_id' => $sessionId],
+            ['currency' => 'IDR'],
         );
     }
 
     protected function syncCartTotals(Cart $cart): void
     {
+        $cart->loadMissing('items.product');
+
+        foreach ($cart->items as $item) {
+            if (! $item->product) {
+                continue;
+            }
+
+            $unitPrice = $this->discountService->applyProductDiscount($item->product) ?? $item->product->price;
+
+            if ((float) $item->unit_price !== (float) $unitPrice) {
+                $item->update([
+                    'unit_price' => $unitPrice,
+                    'line_total' => $item->quantity * $unitPrice,
+                ]);
+            } else {
+                // Keep line_total consistent even if quantity changed elsewhere
+                $expectedLineTotal = $item->quantity * $unitPrice;
+                if ((float) $item->line_total !== (float) $expectedLineTotal) {
+                    $item->update(['line_total' => $expectedLineTotal]);
+                }
+            }
+        }
+
         $subtotal = $cart->items()->sum('line_total');
 
         $cart->update([
@@ -110,5 +173,10 @@ class CartController extends Controller
             'discount_total' => 0,
             'total' => $subtotal,
         ]);
+    }
+
+    private function inventoryEnabled(): bool
+    {
+        return Setting::boolOf('inventory_enabled', true);
     }
 }

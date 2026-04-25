@@ -45,22 +45,19 @@ Route::post('/cart/items', [CartController::class, 'store'])->name('cart.store')
 Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
 
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout/apply-voucher', [CheckoutController::class, 'applyVoucher'])->name('checkout.apply-voucher');
+
 // Payment — webhook excluded from CSRF via bootstrap/app.php
 Route::post('/payment/notification', [PaymentController::class, 'notification'])->name('payment.notification');
 Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment/pending', [PaymentController::class, 'pending'])->name('payment.pending');
 Route::get('/payment/failed', [PaymentController::class, 'failed'])->name('payment.failed');
+Route::post('/payment/token', [PaymentController::class, 'token'])->name('payment.token');
+Route::get('/payment/{orderNumber}', [PaymentController::class, 'show'])->name('payment.show');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::post('/checkout/apply-voucher', [CheckoutController::class, 'applyVoucher'])->name('checkout.apply-voucher');
-
-    // Payment — token generation & payment page (auth required)
-    Route::post('/payment/token', [PaymentController::class, 'token'])->name('payment.token');
-    Route::post('/payment/mock-simulate', [PaymentController::class, 'mockSimulate'])->name('payment.mock-simulate');
-    Route::get('/payment/{orderNumber}', [PaymentController::class, 'show'])->name('payment.show');
-
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
 
@@ -147,6 +144,8 @@ Route::middleware(['auth', 'role:super-admin|admin|editor'])->prefix('admin')->n
     // System — Settings
     Route::get('settings', [AdminSettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+    Route::get('integrations', [AdminSettingController::class, 'integrations'])->name('integrations.index');
+    Route::put('integrations', [AdminSettingController::class, 'updateIntegrations'])->name('integrations.update');
 
     // System — Media Library
     Route::get('media/json', [AdminMediaController::class, 'json'])->name('media.json');

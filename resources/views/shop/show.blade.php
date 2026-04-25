@@ -6,7 +6,7 @@
     {{-- Breadcrumb --}}
     <div class="py-6 border-b border-base-200 mb-10">
         <nav class="text-[11px] uppercase tracking-widest text-base-content/50 flex items-center gap-2">
-            <a href="{{ route('home') }}" class="hover:text-base-content transition-colors">Home</a>
+            <a href="{{ route('home') }}" class="hover:text-base-content transition-colors">{{ __('Home') }}</a>
             <span>/</span>
             <a href="{{ route('shop.index') }}" class="hover:text-base-content transition-colors">{{ __('Shop') }}</a>
             <span>/</span>
@@ -37,7 +37,7 @@
                 @endif
                 @if($product->is_featured)
                 <div class="absolute top-4 left-4 z-10">
-                    <span class="bg-base-100/90 px-3 py-1 text-[9px] uppercase tracking-widest text-base-content">Featured</span>
+                    <span class="bg-base-100/90 px-3 py-1 text-[9px] uppercase tracking-widest text-base-content">{{ __('Featured') }}</span>
                 </div>
                 @endif
             </div>
@@ -54,6 +54,10 @@
         </div>
 
         <div class="lg:col-span-4 flex flex-col gap-6 py-2">
+            @php
+                $inventoryEnabled = \App\Models\Setting::boolOf('inventory_enabled', true);
+                $canPurchase = ! $inventoryEnabled || $product->stock > 0;
+            @endphp
 
             {{-- Category + Name --}}
             @if($product->category)
@@ -65,11 +69,11 @@
             <div class="flex items-baseline gap-3 border-y border-base-200 py-5">
                 @if($product->discounted_price)
                     @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
-                    <span class="display-font text-3xl text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span>
-                    <span class="display-font text-xl text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    <span class="display-font text-3xl text-error">@money($product->discounted_price)</span>
+                    <span class="display-font text-xl text-base-content/40 line-through">@money($product->price)</span>
                     <span class="bg-error text-error-content text-[9px] font-bold uppercase tracking-widest px-2 py-1">-{{ $discountPct }}%</span>
                 @else
-                    <span class="display-font text-3xl text-base-content">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    <span class="display-font text-3xl text-base-content">@money($product->price)</span>
                 @endif
                 @if($product->weight)
                 <span class="text-[11px] text-base-content/40 uppercase tracking-widest">{{ $product->weight }} g</span>
@@ -77,7 +81,7 @@
             </div>
             @if($product->discounted_price)
             @php $saveAmount = $product->price - $product->discounted_price; @endphp
-            <p class="text-[11px] text-success uppercase tracking-widest -mt-3">Hemat Rp {{ number_format($saveAmount, 0, ',', '.') }}</p>
+            <p class="text-[11px] text-success uppercase tracking-widest -mt-3">{{ __('Save') }} @money($saveAmount)</p>
             @endif
 
             {{-- Short Description --}}
@@ -87,7 +91,10 @@
 
             <div class="border border-base-200 bg-base-100 p-4 space-y-4">
                 <div class="flex items-center gap-2">
-                    @if($product->stock > 0)
+                    @if(!$inventoryEnabled)
+                        <span class="inline-block w-2 h-2 rounded-full bg-success"></span>
+                        <span class="text-[11px] uppercase tracking-widest text-base-content/60">{{ __('Inventory Off') }} · {{ __('Ready to Order') }}</span>
+                    @elseif($product->stock > 0)
                         <span class="inline-block w-2 h-2 rounded-full bg-success"></span>
                         <span class="text-[11px] uppercase tracking-widest text-base-content/60">{{ __('In Stock') }} ({{ $product->stock }})</span>
                     @else
@@ -96,16 +103,16 @@
                     @endif
                 </div>
 
-                @if($product->stock > 0)
+                @if($canPurchase)
                 <form method="POST" action="{{ route('cart.store') }}" class="space-y-3">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <div class="flex flex-col gap-3 sm:flex-row">
                         <div class="flex border border-base-300 w-full sm:w-32 bg-base-100">
                             <button type="button" onclick="let i=this.nextElementSibling;if(i.value>1)i.value--" class="px-4 py-3 text-base-content/60 hover:text-base-content text-lg leading-none transition-colors">−</button>
-                            <input type="number" name="quantity" min="1" max="{{ $product->stock }}" value="1"
+                            <input type="number" name="quantity" min="1" @if($inventoryEnabled) max="{{ $product->stock }}" @endif value="1"
                                    class="w-full text-center bg-transparent text-sm border-x border-base-300 focus:outline-none">
-                            <button type="button" onclick="let i=this.previousElementSibling;if(i.value<{{ $product->stock }})i.value++" class="px-4 py-3 text-base-content/60 hover:text-base-content text-lg leading-none transition-colors">+</button>
+                            <button type="button" onclick="let i=this.previousElementSibling;@if($inventoryEnabled) if(i.value<{{ $product->stock }}) @endif i.value++" class="px-4 py-3 text-base-content/60 hover:text-base-content text-lg leading-none transition-colors">+</button>
                         </div>
                         <button type="submit" class="w-full sm:flex-1 bg-primary text-white px-6 py-3 uppercase tracking-widest text-[11px] font-semibold hover:bg-base-content hover:text-base-100 transition-colors">
                             {{ __('Add to Cart') }}
@@ -118,7 +125,7 @@
                 </button>
                 @endif
 
-                <p class="text-[10px] text-base-content/35 uppercase tracking-widest">SKU: {{ $product->sku }}</p>
+                <p class="text-[10px] text-base-content/35 uppercase tracking-widest">{{ __('SKU') }}: {{ $product->sku }}</p>
             </div>
 
         </div>
@@ -192,7 +199,7 @@
                 </div>
                 <div class="text-center px-1">
                     <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $related->name }}</h3>
-                    <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($related->price, 0, ',', '.') }}</p>
+                    <p class="text-[11px] text-base-content/60 tracking-widest">@money($related->price)</p>
                 </div>
             </a>
             @endforeach

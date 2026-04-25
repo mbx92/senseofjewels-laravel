@@ -42,6 +42,34 @@ class Order extends Model
         ];
     }
 
+    public function getFulfillmentStatusAttribute($value): string
+    {
+        return match ($this->status) {
+            'pending' => 'unfulfilled',
+            'processing', 'shipped' => 'processing',
+            'delivered', 'completed' => 'fulfilled',
+            'cancelled' => 'cancelled',
+            default => (string) ($value ?? 'unfulfilled'),
+        };
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Order $order): void {
+            if (! $order->isDirty('status')) {
+                return;
+            }
+
+            $order->fulfillment_status = match ($order->status) {
+                'pending' => 'unfulfilled',
+                'processing', 'shipped' => 'processing',
+                'delivered', 'completed' => 'fulfilled',
+                'cancelled' => 'cancelled',
+                default => $order->fulfillment_status,
+            };
+        });
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);

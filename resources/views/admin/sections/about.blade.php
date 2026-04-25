@@ -1,22 +1,50 @@
 @extends('layouts.admin')
 
+@push('styles')
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-container { border-bottom-left-radius: .5rem; border-bottom-right-radius: .5rem; }
+    .ql-toolbar { border-top-left-radius: .5rem; border-top-right-radius: .5rem; }
+    .ql-editor { min-height: 220px; font-size: 14px; }
+</style>
+@endpush
+
 @push('scripts')
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!document.querySelector('#about-content')) {
-            return;
+    function initAboutEditor() {
+        const textarea = document.getElementById('about-content');
+        if (!textarea || textarea.dataset.quillMounted === '1') return;
+
+        textarea.dataset.quillMounted = '1';
+        const wrapper = document.createElement('div');
+        textarea.parentNode.insertBefore(wrapper, textarea);
+        textarea.style.display = 'none';
+
+        const quill = new Quill(wrapper, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['link'],
+                    ['clean'],
+                ],
+            },
+        });
+
+        if (textarea.value) {
+            quill.root.innerHTML = textarea.value;
         }
 
-        tinymce.init({
-            selector: '#about-content',
-            plugins: 'lists link image code',
-            toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
-            height: 300,
-            skin: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oxide-dark' : 'oxide',
-            content_css: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default',
+        const form = textarea.closest('form');
+        form?.addEventListener('submit', () => {
+            textarea.value = quill.root.innerHTML;
         });
-    });
+    }
+
+    document.addEventListener('DOMContentLoaded', initAboutEditor);
+    document.addEventListener('livewire:navigated', initAboutEditor);
 </script>
 @endpush
 
@@ -28,7 +56,7 @@
     </div>
 </div>
 
-<form action="{{ route('admin.about.update') }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route('admin.about.update') }}" method="POST" enctype="multipart/form-data" class="pb-24">
     @csrf
     @method('PUT')
 
@@ -74,18 +102,22 @@
                 @enderror
             </div>
 
-            <div class="form-control">
+        </div>
+    </div>
+
+    <div class="sticky bottom-0 z-30 bg-base-100/95 backdrop-blur border-t border-base-300 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] -mx-5 lg:-mx-8 px-5 lg:px-8">
+        <div class="max-w-5xl mx-auto px-6 py-3">
+            <div class="flex flex-wrap items-center justify-between gap-4">
                 <label class="label cursor-pointer justify-start gap-4">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" class="toggle toggle-primary"
                         {{ old('is_active', $section?->is_active ?? true) ? 'checked' : '' }}>
-                    <span class="label-text">Aktifkan section ini</span>
+                    <span class="label-text font-medium">Aktifkan about section</span>
                 </label>
-            </div>
-
-            <div class="card-actions justify-end mt-4">
-                <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost">Batal</a>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <div class="flex gap-3">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-ghost">Batal</a>
+                    <button type="submit" class="btn btn-primary">Simpan Semua Perubahan</button>
+                </div>
             </div>
         </div>
     </div>

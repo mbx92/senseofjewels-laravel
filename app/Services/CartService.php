@@ -11,22 +11,39 @@ use Illuminate\Support\Facades\Session;
 
 class CartService
 {
+    public function __construct(protected DiscountService $discountService) {}
+
     protected function resolveCart(): Cart
     {
+        $sessionId = Session::getId();
+
         if (Auth::check()) {
-            // Prefer user-bound cart
+            $sessionCart = Cart::query()->where('session_id', $sessionId)->first();
+
+            if ($sessionCart) {
+                if (! $sessionCart->user_id) {
+                    $sessionCart->update(['user_id' => Auth::id()]);
+                }
+
+                return $sessionCart;
+            }
+
             $cart = Cart::query()->firstOrCreate(
                 ['user_id' => Auth::id()],
-                ['session_id' => Session::getId(), 'currency' => 'IDR'],
+                ['session_id' => $sessionId, 'currency' => 'IDR'],
             );
-        } else {
-            $cart = Cart::query()->firstOrCreate(
-                ['session_id' => Session::getId()],
-                ['currency' => 'IDR'],
-            );
+
+            if ($cart->session_id !== $sessionId) {
+                $cart->update(['session_id' => $sessionId]);
+            }
+
+            return $cart;
         }
 
-        return $cart;
+        return Cart::query()->firstOrCreate(
+            ['session_id' => $sessionId],
+            ['currency' => 'IDR'],
+        );
     }
 
     public function add(int $productId, int $qty = 1): CartItem
@@ -39,12 +56,14 @@ class CartService
 
         $newQty = ($item->exists ? $item->quantity : 0) + $qty;
 
+        $unitPrice = $this->discountService->applyProductDiscount($product) ?? $product->price;
+
         $item->fill([
             'product_name' => $product->name,
             'product_sku'  => $product->sku,
             'quantity'     => $newQty,
-            'unit_price'   => $product->price,
-            'line_total'   => $newQty * $product->price,
+            'unit_price'   => $unitPrice,
+            'line_total'   => $newQty * $unitPrice,
         ])->save();
 
         $this->syncTotals($cart);
@@ -58,9 +77,15 @@ class CartService
 
         abort_unless($item->cart->user_id === Auth::id() || $item->cart->session_id === Session::getId(), 403);
 
+        $product = $item->product;
+        $unitPrice = $product
+            ? ($this->discountService->applyProductDiscount($product) ?? $product->price)
+            : $item->unit_price;
+
         $item->update([
             'quantity'   => $qty,
-            'line_total' => $qty * $item->unit_price,
+            'unit_price' => $unitPrice,
+            'line_total' => $qty * $unitPrice,
         ]);
 
         $this->syncTotals($item->cart);
@@ -128,16 +153,40 @@ class CartService
 
     public function getItems(): Collection
     {
-        return $this->resolveCart()->load('items.product.images')->items;
+        $cart = $this->resolveCart()->load('items.product.images');
+        $this->syncTotals($cart);
+
+        return $cart->fresh('items.product.images')->items;
     }
 
     public function getCart(): Cart
     {
-        return $this->resolveCart()->load('items.product.images');
+        $cart = $this->resolveCart()->load('items.product.images');
+        $this->syncTotals($cart);
+
+        return $cart->fresh('items.product.images');
     }
 
     protected function syncTotals(Cart $cart): void
     {
+        $cart->loadMissing('items.product');
+
+        foreach ($cart->items as $item) {
+            if (! $item->product) {
+                continue;
+            }
+
+            $unitPrice = $this->discountService->applyProductDiscount($item->product) ?? $item->product->price;
+            $expectedLineTotal = $item->quantity * $unitPrice;
+
+            if ((float) $item->unit_price !== (float) $unitPrice || (float) $item->line_total !== (float) $expectedLineTotal) {
+                $item->update([
+                    'unit_price' => $unitPrice,
+                    'line_total' => $expectedLineTotal,
+                ]);
+            }
+        }
+
         $subtotal = $cart->items()->sum('line_total');
 
         $cart->update([

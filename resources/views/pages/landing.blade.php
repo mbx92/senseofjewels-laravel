@@ -182,14 +182,15 @@
         <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
 
             <div class="text-center mb-8">
-                <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-2">Penawaran Spesial</span>
-                <h2 class="display-font text-3xl md:text-4xl text-base-content">Promo Aktif</h2>
+                <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-2">{{ __('Special Offers') }}</span>
+                <h2 class="display-font text-3xl md:text-4xl text-base-content">{{ __('Active Promotions') }}</h2>
             </div>
 
             <div class="grid gap-4 {{ $promos->count() === 1 ? 'grid-cols-1 max-w-2xl mx-auto' : ($promos->count() === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3') }}">
                 @foreach($promos as $promo)
                 <a href="{{ route('shop.index') }}"
-                   class="group relative overflow-hidden aspect-[16/7] block border border-base-300 hover:border-primary/40 transition-colors duration-300">
+                   class="group relative overflow-hidden block min-h-48 md:min-h-56 border border-base-300 hover:border-primary/40 transition-colors duration-300"
+                   style="min-height: 190px;">
 
                     {{-- Background image or gradient fallback --}}
                     @if($promo->image_url)
@@ -210,32 +211,32 @@
                     @endif
 
                     {{-- Content --}}
-                    <div class="absolute inset-0 flex flex-col justify-center px-8 py-6" style="z-index:10;">
+                    <div class="absolute inset-0 flex flex-col justify-center px-4 py-4 md:px-8 md:py-6" style="z-index:10;">
                         {{-- Badge type --}}
                         @if($promo->discount)
-                        <span class="mb-2 w-fit bg-primary/90 text-primary-content text-[9px] uppercase tracking-[0.2em] px-3 py-1">
-                            {{ $promo->discount->type === 'percent' ? 'Diskon ' . number_format($promo->discount->value, 0) . '%' : 'Hemat Rp ' . number_format($promo->discount->value, 0, ',', '.') }}
+                        <span class="mb-1.5 md:mb-2 w-fit bg-primary/90 text-primary-content text-[8px] md:text-[9px] uppercase tracking-[0.15em] md:tracking-[0.2em] px-2 py-1 md:px-3">
+                            {{ $promo->discount->type === 'percent' ? __('Discount') . ' ' . number_format($promo->discount->value, 0) . '%' : __('Save') . ' ' . app(\App\Services\CurrencyService::class)->format($promo->discount->value) }}
                         </span>
                         @endif
 
-                        <h3 class="display-font text-white text-2xl md:text-3xl leading-tight mb-1">{{ $promo->code }}</h3>
+                        <h3 class="display-font text-white text-xl md:text-3xl leading-tight mb-1">{{ $promo->code }}</h3>
 
                         @if($promo->description)
-                        <p class="text-white/70 text-xs font-light mt-1 line-clamp-2">{{ $promo->description }}</p>
+                        <p class="text-white/70 text-[11px] md:text-xs font-light mt-0.5 md:mt-1 line-clamp-2">{{ $promo->description }}</p>
                         @endif
 
-                        <div class="mt-4 flex flex-wrap items-center gap-3 text-[10px] text-white/60 uppercase tracking-widest">
-                            <span class="border border-white/30 px-3 py-1 font-mono tracking-wider text-white/90">{{ $promo->code }}</span>
+                        <div class="mt-2.5 md:mt-4 flex flex-wrap items-center gap-2 md:gap-3 text-[9px] md:text-[10px] text-white/60 uppercase tracking-[0.12em] md:tracking-widest">
+                            <span class="border border-white/30 px-2 py-1 md:px-3 font-mono tracking-wider text-white/90">{{ $promo->code }}</span>
                             @if($promo->ends_at)
-                            <span>Berlaku s/d {{ $promo->ends_at->format('d M Y') }}</span>
+                            <span>{{ __('Valid until') }} {{ $promo->ends_at->format('d M Y') }}</span>
                             @endif
                             @if($promo->minimum_order_amount > 0)
-                            <span>Min. order Rp {{ number_format($promo->minimum_order_amount, 0, ',', '.') }}</span>
+                            <span>{{ __('Min. order') }} @money($promo->minimum_order_amount)</span>
                             @endif
                         </div>
 
-                        <span class="mt-5 w-fit border border-white/50 text-white text-[10px] uppercase tracking-[0.2em] px-5 py-2.5 group-hover:bg-white group-hover:text-neutral transition-all duration-300">
-                            Belanja Sekarang
+                        <span class="mt-3 md:mt-5 w-fit border border-white/50 text-white text-[9px] md:text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] px-4 py-2 md:px-5 md:py-2.5 group-hover:bg-white group-hover:text-neutral transition-all duration-300">
+                            {{ __('Shop Now') }}
                         </span>
                     </div>
                 </a>
@@ -251,12 +252,12 @@
     ===================================================== --}}
     <section id="collection" class="py-20 md:py-28 bg-base-100 border-t border-base-200">
         <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
-            <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-14">
+            <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-14 text-center md:text-left">
                 <div>
                     <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-3">Just Arrived</span>
                     <h2 class="display-font text-4xl md:text-5xl text-base-content">{{ __('New Arrivals') }}</h2>
                 </div>
-                <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content hover:text-primary border-b border-base-content hover:border-primary transition-all pb-1">{{ __('View All') }}</a>
+                <a href="{{ route('shop.index') }}" class="uppercase tracking-widest text-xs font-semibold text-base-content hover:text-primary border-b border-base-content hover:border-primary transition-all pb-1 mx-auto md:mx-0">{{ __('View All') }}</a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
@@ -286,9 +287,9 @@
                         <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $product->name }}</h3>
                         @if($product->discounted_price)
                             @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
-                            <p class="text-[11px] tracking-widest"><span class="text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span> <span class="text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
+                            <p class="text-[11px] tracking-widest"><span class="text-error">@money($product->discounted_price)</span> <span class="text-base-content/40 line-through">@money($product->price)</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
                         @else
-                            <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                            <p class="text-[11px] text-base-content/60 tracking-widest">@money($product->price)</p>
                         @endif
                     </div>
                 </a>
@@ -341,9 +342,9 @@
                         <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $product->name }}</h3>
                         @if($product->discounted_price)
                             @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
-                            <p class="text-[11px] tracking-widest"><span class="text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span> <span class="text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
+                            <p class="text-[11px] tracking-widest"><span class="text-error">@money($product->discounted_price)</span> <span class="text-base-content/40 line-through">@money($product->price)</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
                         @else
-                            <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                            <p class="text-[11px] text-base-content/60 tracking-widest">@money($product->price)</p>
                         @endif
                     </div>
                 </a>
@@ -351,7 +352,7 @@
             </div>
             @else
             <div class="border border-dashed border-base-300 bg-base-100 px-6 py-16 text-center text-base-content/50">
-                {{ __('Belum ada produk unggulan yang aktif. Tandai produk sebagai featured dari admin untuk menampilkannya di landing page.') }}
+                {{ __('No active featured products yet. Mark products as featured from admin to show them on the landing page.') }}
             </div>
             @endif
         </div>
@@ -437,6 +438,123 @@
                         @else
                         <span class="text-base-content/30 tracking-[0.2em] uppercase text-[10px] text-center px-4">Detail Shot</span>
                         @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- ====================================================
+         CONTACT
+    ===================================================== --}}
+    <section id="contact" class="py-20 md:py-28 bg-base-100 border-t border-base-200">
+        <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
+            @php
+                $contactEmail = trim((string) $settings->get('contact_email', 'hello@senseofjewels.id'));
+                $contactPhone = trim((string) $settings->get('contact_phone', '+62 812 0000 0000'));
+                $contactAddress = trim((string) $settings->get('contact_address', 'Seminyak, Bali, Indonesia'));
+                $contactWhatsapp = preg_replace('/\D+/', '', (string) $settings->get('contact_whatsapp', ''));
+                $waLink = $contactWhatsapp ? 'https://wa.me/' . $contactWhatsapp : null;
+
+                $rawMapsEmbed = trim((string) $settings->get('contact_maps_embed', ''));
+                $mapsSrc = '';
+                if ($rawMapsEmbed !== '') {
+                    if (preg_match('/src=["\']([^"\']+)["\']/i', $rawMapsEmbed, $matches)) {
+                        $mapsSrc = $matches[1];
+                    } else {
+                        $mapsSrc = $rawMapsEmbed;
+                    }
+                }
+            @endphp
+            <div class="grid gap-8 lg:grid-cols-[1fr,1.15fr]">
+                <div class="space-y-6">
+                    <div>
+                        <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-3">{{ __('Get in Touch') }}</span>
+                        <h2 class="display-font text-4xl md:text-5xl text-base-content">
+                            {{ $contact?->title ?? __('Contact Us') }}
+                        </h2>
+                        <p class="mt-4 text-sm md:text-base text-base-content/65 font-light leading-relaxed">
+                            {{ $contact?->content ?? __('We are happy to help with custom requests, product details, and order support.') }}
+                        </p>
+                    </div>
+
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-box border border-base-300 bg-base-200/60 p-4">
+                            <div class="text-[10px] uppercase tracking-[0.2em] text-base-content/50 mb-1">{{ __('Email') }}</div>
+                            <a href="mailto:{{ $contactEmail }}" class="text-sm font-medium break-all hover:text-primary transition-colors">{{ $contactEmail }}</a>
+                        </div>
+                        <div class="rounded-box border border-base-300 bg-base-200/60 p-4">
+                            <div class="text-[10px] uppercase tracking-[0.2em] text-base-content/50 mb-1">{{ __('Phone') }}</div>
+                            <a href="tel:{{ preg_replace('/\s+/', '', $contactPhone) }}" class="text-sm font-medium hover:text-primary transition-colors">{{ $contactPhone }}</a>
+                        </div>
+                        <div class="rounded-box border border-base-300 bg-base-200/60 p-4 sm:col-span-2">
+                            <div class="text-[10px] uppercase tracking-[0.2em] text-base-content/50 mb-1">{{ __('Address') }}</div>
+                            <div class="text-sm font-medium whitespace-pre-line">{{ $contactAddress }}</div>
+                        </div>
+                    </div>
+
+                    @if($waLink)
+                    <a href="{{ $waLink }}" target="_blank" rel="noreferrer"
+                       class="inline-flex w-fit items-center gap-2 border border-base-content/20 px-4 py-2 text-[10px] uppercase tracking-[0.2em] font-semibold text-base-content hover:border-primary hover:text-primary transition-colors">
+                        {{ __('Chat WhatsApp') }}
+                    </a>
+                    @endif
+
+                    @if($mapsSrc)
+                    <div class="overflow-hidden rounded-box border border-base-300">
+                        <iframe
+                            src="{{ $mapsSrc }}"
+                            width="100%"
+                            height="250"
+                            style="border:0;"
+                            allowfullscreen=""
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="card border border-base-300 bg-base-100 shadow-sm">
+                    <div class="card-body">
+                        <h3 class="card-title text-xl">{{ __('Send Message') }}</h3>
+                        <form action="{{ route('contact.store') }}" method="POST" class="grid gap-3">
+                            @csrf
+                            <div class="form-control">
+                                <input type="text" name="name" value="{{ old('name') }}"
+                                       placeholder="{{ __('Your Name') }}"
+                                       class="input input-bordered w-full @error('name') input-error @enderror" required>
+                                @error('name')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                                @enderror
+                            </div>
+                            <div class="form-control">
+                                <input type="email" name="email" value="{{ old('email') }}"
+                                       placeholder="{{ __('Your Email') }}"
+                                       class="input input-bordered w-full @error('email') input-error @enderror" required>
+                                @error('email')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                                @enderror
+                            </div>
+                            <div class="form-control">
+                                <input type="text" name="subject" value="{{ old('subject') }}"
+                                       placeholder="{{ __('Subject') }}"
+                                       class="input input-bordered w-full @error('subject') input-error @enderror" required>
+                                @error('subject')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                                @enderror
+                            </div>
+                            <div class="form-control">
+                                <textarea name="message" rows="5"
+                                          placeholder="{{ __('Your Message') }}"
+                                          class="textarea textarea-bordered min-h-32 w-full @error('message') textarea-error @enderror"
+                                          required>{{ old('message') }}</textarea>
+                                @error('message')
+                                <label class="label"><span class="label-text-alt text-error">{{ $message }}</span></label>
+                                @enderror
+                            </div>
+                            <button type="submit" class="btn btn-primary">{{ __('Send Message') }}</button>
+                        </form>
                     </div>
                 </div>
             </div>

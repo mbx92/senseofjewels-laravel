@@ -21,7 +21,7 @@ class SettingController extends Controller
 
     private array $allSettingKeys = [
         // General
-        'site_name', 'site_tagline', 'currency', 'weight_unit', 'maintenance_mode',
+        'site_name', 'site_tagline', 'site_logo', 'currency', 'weight_unit', 'maintenance_mode',
         // Contact
         'contact_address', 'contact_phone', 'contact_email', 'contact_maps_embed', 'contact_whatsapp',
         // Social
@@ -29,7 +29,7 @@ class SettingController extends Controller
         // SEO
         'seo_title', 'seo_description',
         // Commerce
-        'shop_currency_symbol', 'free_shipping_threshold', 'tax_rate',
+        'shop_currency_symbol', 'free_shipping_threshold', 'tax_rate', 'inventory_enabled',
         // Theme Colors
         'theme_primary', 'theme_secondary', 'theme_accent', 'theme_neutral',
         'theme_base_100', 'theme_base_200', 'theme_base_300', 'theme_base_content',
@@ -50,6 +50,7 @@ class SettingController extends Controller
         $validated = $request->validate([
             'site_name'              => ['nullable', 'string', 'max:255'],
             'site_tagline'           => ['nullable', 'string', 'max:255'],
+            'site_logo'              => ['nullable', 'string', 'max:2048'],
             'currency'               => ['nullable', 'string', 'max:10'],
             'weight_unit'            => ['nullable', 'string', 'max:10'],
             'maintenance_mode'       => ['boolean'],
@@ -68,6 +69,7 @@ class SettingController extends Controller
             'shop_currency_symbol'   => ['nullable', 'string', 'max:10'],
             'free_shipping_threshold'=> ['nullable', 'numeric', 'min:0'],
             'tax_rate'               => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'inventory_enabled'      => ['boolean'],
             // Theme colors — must be valid hex
             'theme_primary'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'theme_secondary'        => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
@@ -81,7 +83,7 @@ class SettingController extends Controller
         ]);
 
         $groups = [
-            'site_name' => 'general', 'site_tagline' => 'general',
+            'site_name' => 'general', 'site_tagline' => 'general', 'site_logo' => 'general',
             'currency' => 'general', 'weight_unit' => 'general', 'maintenance_mode' => 'general',
             'contact_address' => 'contact', 'contact_phone' => 'contact',
             'contact_email' => 'contact', 'contact_maps_embed' => 'contact', 'contact_whatsapp' => 'contact',
@@ -89,6 +91,7 @@ class SettingController extends Controller
             'social_twitter' => 'social', 'social_youtube' => 'social', 'whatsapp_number' => 'social',
             'seo_title' => 'seo', 'seo_description' => 'seo',
             'shop_currency_symbol' => 'commerce', 'free_shipping_threshold' => 'commerce', 'tax_rate' => 'commerce',
+            'inventory_enabled' => 'commerce',
             'theme_primary' => 'colors', 'theme_secondary' => 'colors', 'theme_accent' => 'colors',
             'theme_neutral' => 'colors', 'theme_base_100' => 'colors', 'theme_base_200' => 'colors',
             'theme_base_300' => 'colors', 'theme_base_content' => 'colors', 'theme_neutral_content' => 'colors',
@@ -152,5 +155,31 @@ class SettingController extends Controller
 
         return redirect()->route('admin.contact-settings')
             ->with('success', 'Informasi kontak berhasil diperbarui.');
+    }
+
+    public function integrations(): View
+    {
+        $settings = Setting::query()
+            ->whereIn('key', ['midtrans_enabled'])
+            ->pluck('value', 'key');
+
+        $midtransConfigured = ! empty(config('midtrans.server_key')) && ! empty(config('midtrans.client_key'));
+
+        return view('admin.settings.integrations', compact('settings', 'midtransConfigured'));
+    }
+
+    public function updateIntegrations(Request $request): RedirectResponse
+    {
+        Setting::query()->updateOrCreate(
+            ['key' => 'midtrans_enabled'],
+            [
+                'value' => $request->boolean('midtrans_enabled') ? '1' : '0',
+                'group' => 'integration',
+                'type' => 'boolean',
+            ],
+        );
+
+        return redirect()->route('admin.integrations.index')
+            ->with('success', 'Pengaturan integrasi berhasil disimpan.');
     }
 }

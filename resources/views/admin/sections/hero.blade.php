@@ -33,9 +33,15 @@
 
             @php
                 $posBtns = [
-                    ['top-left','↖'],['top-center','↑'],['top-right','↗'],
-                    ['middle-left','←'],['middle-center','·'],['middle-right','→'],
-                    ['bottom-left','↙'],['bottom-center','↓'],['bottom-right','↘'],
+                    ['top-left', 'up-left'],
+                    ['top-center', 'up'],
+                    ['top-right', 'up-right'],
+                    ['middle-left', 'left'],
+                    ['middle-center', 'center'],
+                    ['middle-right', 'right'],
+                    ['bottom-left', 'down-left'],
+                    ['bottom-center', 'down'],
+                    ['bottom-right', 'down-right'],
                 ];
             @endphp
             <div class="grid gap-4 sm:grid-cols-2">
@@ -105,11 +111,37 @@
                 <label class="label"><span class="label-text font-medium">Posisi Teks</span><span class="label-text-alt text-base-content/40">klik untuk pilih posisi</span></label>
                 <input type="hidden" name="text_position" :value="pos">
                 <div style="display:inline-grid;grid-template-columns:repeat(3,34px);gap:3px;">
-                    @foreach($posBtns as [$p, $icon])
+                    @foreach($posBtns as [$p, $direction])
                     <button type="button" @click="pos='{{ $p }}'"
                             :class="pos === '{{ $p }}' ? 'btn-primary' : 'btn-ghost'"
-                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;font-size:14px;"
-                            title="{{ $p }}">{{ $icon }}</button>
+                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;"
+                            title="{{ $p }}">
+                        @if($direction === 'center')
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <circle cx="10" cy="10" r="2.5" />
+                            </svg>
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                @if($direction === 'up-left')
+                                    <path fill-rule="evenodd" d="M14.78 14.78a.75.75 0 0 1-1.06 0L6 7v5.25a.75.75 0 0 1-1.5 0V5.19A1.19 1.19 0 0 1 5.69 4h7.06a.75.75 0 0 1 0 1.5H7l7.78 7.72a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up')
+                                    <path fill-rule="evenodd" d="M10 16a.75.75 0 0 1-.75-.75V6.81L6.28 9.78a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 1 1-1.06 1.06L10.75 6.8v8.44A.75.75 0 0 1 10 16Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up-right')
+                                    <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L13 6h-5.25a.75.75 0 0 1 0-1.5h7.06A1.19 1.19 0 0 1 16 5.69v7.06a.75.75 0 0 1-1.5 0V7l-7.72 7.78a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'left')
+                                    <path fill-rule="evenodd" d="M16 10a.75.75 0 0 1-.75.75H6.81l2.97 2.97a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 1.06L6.8 9.25h8.44A.75.75 0 0 1 16 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'right')
+                                    <path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h8.44L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-left')
+                                    <path fill-rule="evenodd" d="M14.78 5.22a.75.75 0 0 1 0 1.06L7 14h5.25a.75.75 0 0 1 0 1.5H5.19A1.19 1.19 0 0 1 4 14.31V7.25a.75.75 0 0 1 1.5 0V13l7.72-7.78a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down')
+                                    <path fill-rule="evenodd" d="M10 4a.75.75 0 0 1 .75.75v8.44l2.97-2.97a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 1 1 1.06-1.06l2.97 2.97V4.75A.75.75 0 0 1 10 4Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-right')
+                                    <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 0 1 1.06 0L14 13V7.75a.75.75 0 0 1 1.5 0v7.06A1.19 1.19 0 0 1 14.31 16H7.25a.75.75 0 0 1 0-1.5H13L5.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                @endif
+                            </svg>
+                        @endif
+                    </button>
                     @endforeach
                 </div>
                 <span class="text-xs text-base-content/40 mt-1" x-text="pos.replace('-',' · ')"></span>
@@ -212,11 +244,37 @@
                 <label class="label"><span class="label-text font-medium">Posisi Teks</span></label>
                 <input type="hidden" name="banner1_text_position" :value="pos">
                 <div style="display:inline-grid;grid-template-columns:repeat(3,34px);gap:3px;">
-                    @foreach($posBtns as [$p, $icon])
+                    @foreach($posBtns as [$p, $direction])
                     <button type="button" @click="pos='{{ $p }}'"
                             :class="pos === '{{ $p }}' ? 'btn-primary' : 'btn-ghost'"
-                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;font-size:14px;"
-                            title="{{ $p }}">{{ $icon }}</button>
+                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;"
+                            title="{{ $p }}">
+                        @if($direction === 'center')
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <circle cx="10" cy="10" r="2.5" />
+                            </svg>
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                @if($direction === 'up-left')
+                                    <path fill-rule="evenodd" d="M14.78 14.78a.75.75 0 0 1-1.06 0L6 7v5.25a.75.75 0 0 1-1.5 0V5.19A1.19 1.19 0 0 1 5.69 4h7.06a.75.75 0 0 1 0 1.5H7l7.78 7.72a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up')
+                                    <path fill-rule="evenodd" d="M10 16a.75.75 0 0 1-.75-.75V6.81L6.28 9.78a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 1 1-1.06 1.06L10.75 6.8v8.44A.75.75 0 0 1 10 16Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up-right')
+                                    <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L13 6h-5.25a.75.75 0 0 1 0-1.5h7.06A1.19 1.19 0 0 1 16 5.69v7.06a.75.75 0 0 1-1.5 0V7l-7.72 7.78a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'left')
+                                    <path fill-rule="evenodd" d="M16 10a.75.75 0 0 1-.75.75H6.81l2.97 2.97a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 1.06L6.8 9.25h8.44A.75.75 0 0 1 16 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'right')
+                                    <path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h8.44L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-left')
+                                    <path fill-rule="evenodd" d="M14.78 5.22a.75.75 0 0 1 0 1.06L7 14h5.25a.75.75 0 0 1 0 1.5H5.19A1.19 1.19 0 0 1 4 14.31V7.25a.75.75 0 0 1 1.5 0V13l7.72-7.78a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down')
+                                    <path fill-rule="evenodd" d="M10 4a.75.75 0 0 1 .75.75v8.44l2.97-2.97a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 1 1 1.06-1.06l2.97 2.97V4.75A.75.75 0 0 1 10 4Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-right')
+                                    <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 0 1 1.06 0L14 13V7.75a.75.75 0 0 1 1.5 0v7.06A1.19 1.19 0 0 1 14.31 16H7.25a.75.75 0 0 1 0-1.5H13L5.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                @endif
+                            </svg>
+                        @endif
+                    </button>
                     @endforeach
                 </div>
                 <span class="text-xs text-base-content/40 mt-1" x-text="pos.replace('-',' · ')"></span>
@@ -278,11 +336,37 @@
                 <label class="label"><span class="label-text font-medium">Posisi Teks</span></label>
                 <input type="hidden" name="banner2_text_position" :value="pos">
                 <div style="display:inline-grid;grid-template-columns:repeat(3,34px);gap:3px;">
-                    @foreach($posBtns as [$p, $icon])
+                    @foreach($posBtns as [$p, $direction])
                     <button type="button" @click="pos='{{ $p }}'"
                             :class="pos === '{{ $p }}' ? 'btn-primary' : 'btn-ghost'"
-                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;font-size:14px;"
-                            title="{{ $p }}">{{ $icon }}</button>
+                            class="btn btn-xs" style="width:34px;height:34px;min-height:0;padding:0;"
+                            title="{{ $p }}">
+                        @if($direction === 'center')
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <circle cx="10" cy="10" r="2.5" />
+                            </svg>
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                @if($direction === 'up-left')
+                                    <path fill-rule="evenodd" d="M14.78 14.78a.75.75 0 0 1-1.06 0L6 7v5.25a.75.75 0 0 1-1.5 0V5.19A1.19 1.19 0 0 1 5.69 4h7.06a.75.75 0 0 1 0 1.5H7l7.78 7.72a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up')
+                                    <path fill-rule="evenodd" d="M10 16a.75.75 0 0 1-.75-.75V6.81L6.28 9.78a.75.75 0 1 1-1.06-1.06l4.25-4.25a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 1 1-1.06 1.06L10.75 6.8v8.44A.75.75 0 0 1 10 16Z" clip-rule="evenodd" />
+                                @elseif($direction === 'up-right')
+                                    <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 0 1 0-1.06L13 6h-5.25a.75.75 0 0 1 0-1.5h7.06A1.19 1.19 0 0 1 16 5.69v7.06a.75.75 0 0 1-1.5 0V7l-7.72 7.78a.75.75 0 0 1-1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'left')
+                                    <path fill-rule="evenodd" d="M16 10a.75.75 0 0 1-.75.75H6.81l2.97 2.97a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 1.06L6.8 9.25h8.44A.75.75 0 0 1 16 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'right')
+                                    <path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h8.44L10.22 6.28a.75.75 0 1 1 1.06-1.06l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06l2.97-2.97H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-left')
+                                    <path fill-rule="evenodd" d="M14.78 5.22a.75.75 0 0 1 0 1.06L7 14h5.25a.75.75 0 0 1 0 1.5H5.19A1.19 1.19 0 0 1 4 14.31V7.25a.75.75 0 0 1 1.5 0V13l7.72-7.78a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down')
+                                    <path fill-rule="evenodd" d="M10 4a.75.75 0 0 1 .75.75v8.44l2.97-2.97a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0l-4.25-4.25a.75.75 0 1 1 1.06-1.06l2.97 2.97V4.75A.75.75 0 0 1 10 4Z" clip-rule="evenodd" />
+                                @elseif($direction === 'down-right')
+                                    <path fill-rule="evenodd" d="M5.22 5.22a.75.75 0 0 1 1.06 0L14 13V7.75a.75.75 0 0 1 1.5 0v7.06A1.19 1.19 0 0 1 14.31 16H7.25a.75.75 0 0 1 0-1.5H13L5.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                                @endif
+                            </svg>
+                        @endif
+                    </button>
                     @endforeach
                 </div>
                 <span class="text-xs text-base-content/40 mt-1" x-text="pos.replace('-',' · ')"></span>

@@ -5,14 +5,14 @@
 
     {{-- Page Header --}}
     <div class="space-y-1">
-        <h1 class="display-font text-4xl text-base-content">Checkout</h1>
-        <p class="text-sm text-base-content/55">Lengkapi data pengiriman, lalu selesaikan pembayaran melalui Midtrans.</p>
+        <h1 class="display-font text-4xl text-base-content">{{ __('Checkout') }}</h1>
+        <p class="text-sm text-base-content/55">{{ __('Complete your shipping details, then finish payment with Midtrans.') }}</p>
     </div>
 
     @if (! $cart || $cart->items->isEmpty())
         <div class="alert alert-warning">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z"/></svg>
-            <span>Keranjang Anda kosong. <a href="{{ route('shop.index') }}" class="underline">Kembali ke toko</a></span>
+            <span>{{ __('Your cart is empty.') }} <a href="{{ route('shop.index') }}" class="underline">{{ __('Back to Shop') }}</a></span>
         </div>
     @else
         <form method="POST" action="{{ route('checkout.store') }}" class="space-y-6">
@@ -108,7 +108,7 @@
                 {{-- Notes --}}
                 <div class="card border border-base-300 bg-base-100">
                     <div class="card-body gap-3">
-                        <h2 class="card-title text-base font-semibold">Catatan Order</h2>
+                        <h2 class="card-title text-base font-semibold">{{ __('Order Notes') }}</h2>
                         <div class="form-control">
                             <textarea name="notes" rows="3" placeholder="Instruksi khusus pengiriman, dll. (opsional)"
                                 class="textarea textarea-bordered min-h-20 w-full">{{ old('notes') }}</textarea>
@@ -131,32 +131,50 @@
                                     <p class="font-medium text-base-content truncate">{{ $item->product_name }}</p>
                                     <p class="text-base-content/50 text-xs mt-0.5">Qty {{ $item->quantity }}</p>
                                 </div>
-                                <span class="font-light text-base-content/80 whitespace-nowrap">Rp {{ number_format($item->line_total, 0, ',', '.') }}</span>
+                                <span class="font-light text-base-content/80 whitespace-nowrap">@money($item->line_total)</span>
                             </li>
                             @endforeach
                         </ul>
 
+                        @php
+                            $productDiscountTotal = $cart->items->sum(function ($item) {
+                                $basePrice = $item->product?->price ?? $item->unit_price;
+                                return max(0, ($basePrice - $item->unit_price) * $item->quantity);
+                            });
+                        @endphp
                         <div class="pt-3 space-y-2 text-sm border-t border-base-200">
                             <div class="flex justify-between text-base-content/60">
                                 <span>Subtotal</span>
-                                <span>Rp {{ number_format($cart->subtotal, 0, ',', '.') }}</span>
+                                <span>@money($cart->subtotal)</span>
                             </div>
+                            @if($productDiscountTotal > 0)
+                            <div class="flex justify-between text-success">
+                                <span>Diskon Produk</span>
+                                <span>- @money($productDiscountTotal)</span>
+                            </div>
+                            @endif
                             @if($cart->discount_total > 0)
                             <div class="flex justify-between text-success">
-                                <span>Diskon</span>
-                                <span>- Rp {{ number_format($cart->discount_total, 0, ',', '.') }}</span>
+                                <span>Diskon Voucher</span>
+                                <span>- @money($cart->discount_total)</span>
+                            </div>
+                            @endif
+                            @if($productDiscountTotal + $cart->discount_total > 0)
+                            <div class="flex justify-between text-base-content/70 text-xs pt-1">
+                                <span>Total Hemat</span>
+                                <span>@money($productDiscountTotal + $cart->discount_total)</span>
                             </div>
                             @endif
                             <div class="flex justify-between font-semibold text-base pt-1 border-t border-base-200">
                                 <span>Total</span>
-                                <span>Rp {{ number_format($cart->total, 0, ',', '.') }}</span>
+                                <span>@money($cart->total)</span>
                             </div>
                         </div>
 
                         {{-- Voucher --}}
                         <div x-data="{ code: '', loading: false, message: '', valid: false, discountFmt: '', total: '' }" class="pt-1">
                             <div class="form-control">
-                                <label class="label"><span class="label-text text-xs font-medium uppercase tracking-widest text-base-content/50">Kode Voucher</span></label>
+                                <label class="label"><span class="label-text text-xs font-medium uppercase tracking-widest text-base-content/50">{{ __('Voucher Code') }}</span></label>
                                 <div class="flex gap-2">
                                     <input type="text" x-model="code"
                                         placeholder="Masukkan kode voucher"
@@ -176,7 +194,7 @@
                                             .then(d => { loading=false; valid=d.valid; message=d.message; if(d.valid){ discountFmt=d.discount_fmt; total=d.total_fmt; } })
                                             .catch(() => { loading=false; message='Terjadi kesalahan.'; });
                                         ">
-                                        <span x-show="!loading">Terapkan</span>
+                                        <span x-show="!loading">{{ __('Apply') }}</span>
                                         <span x-show="loading" class="loading loading-spinner loading-xs"></span>
                                     </button>
                                 </div>
@@ -208,7 +226,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-full btn-lg">
-            Konfirmasi & Lanjut ke Pembayaran →
+            {{ __('Confirm & Continue to Payment') }} →
         </button>
         </form>
     @endif

@@ -25,6 +25,13 @@
 
         {{-- GENERAL --}}
         <div x-show="tab === 'general'" class="space-y-6">
+            @include('admin.components.media-picker', [
+                'inputName'    => 'site_logo',
+                'inputId'      => 'site_logo',
+                'currentValue' => old('site_logo', $settings['site_logo'] ?? ''),
+                'label'        => 'Site Logo',
+            ])
+
             <div class="grid gap-6 sm:grid-cols-2">
                 <div>
                     <label class="block text-[10px] uppercase tracking-[0.2em] text-base-content/50 mb-2">Site Name</label>
@@ -141,6 +148,16 @@
                            min="0" max="100" step="0.01"
                            class="w-full border-b border-base-content/20 bg-transparent py-2.5 text-sm focus:outline-none focus:border-primary transition-colors">
                 </div>
+            </div>
+            <div class="flex items-center gap-4 pt-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="hidden" name="inventory_enabled" value="0">
+                    <input type="checkbox" name="inventory_enabled" value="1"
+                           class="toggle toggle-sm toggle-primary"
+                           {{ ($settings['inventory_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                    <span class="text-sm text-base-content/70">Inventory Active</span>
+                </label>
+                <span class="text-[11px] text-base-content/40">Jika nonaktif, stok tidak membatasi pembelian dan tidak berkurang otomatis.</span>
             </div>
         </div>
 

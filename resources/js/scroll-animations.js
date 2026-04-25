@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initScrollAnimationsAndMobileMenu() {
     // 1. Intersection Observer for Scroll Animations
     const observerOptions = {
         root: null,
@@ -21,9 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Mobile Menu Toggle
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileMenuBtn && mobileMenu) {
+    if (mobileMenuBtn && mobileMenu && !mobileMenuBtn.dataset.bound) {
+        mobileMenuBtn.dataset.bound = 'true';
         mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
     }
-});
+}
+
+document.addEventListener('DOMContentLoaded', initScrollAnimationsAndMobileMenu);
+document.addEventListener('livewire:navigated', initScrollAnimationsAndMobileMenu);

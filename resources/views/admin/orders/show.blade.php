@@ -32,6 +32,19 @@
                     </select>
                 </div>
                 <div class="form-control">
+                    <label class="label"><span class="label-text">Status Pembayaran</span></label>
+                    <select name="payment_status" class="select select-bordered select-sm">
+                        @foreach (['pending','paid','failed','refunded'] as $p)
+                            <option value="{{ $p }}" @selected($order->payment_status === $p)>{{ ucfirst($p) }}</option>
+                        @endforeach
+                    </select>
+                    <label class="label pt-1">
+                        <span class="label-text-alt text-base-content/50">
+                            Provider: {{ strtoupper($order->payment?->provider ?? 'manual') }}
+                        </span>
+                    </label>
+                </div>
+                <div class="form-control">
                     <label class="label"><span class="label-text">No. Resi (opsional)</span></label>
                     <input type="text" name="tracking_number"
                         value="{{ $order->shipping_address['tracking'] ?? '' }}"

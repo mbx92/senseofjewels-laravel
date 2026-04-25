@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PaymentLog;
+use App\Models\Setting;
 use App\Services\MidtransService;
-use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,13 +15,18 @@ class PaymentController extends Controller
 {
     public function __construct(
         protected MidtransService $midtrans,
-        protected OrderService    $orderService,
     ) {}
 
-    /** Apakah Midtrans sudah dikonfigurasi? */
     private function midtransConfigured(): bool
     {
-        return ! empty(config('midtrans.server_key'));
+        return ! empty(config('midtrans.server_key')) && ! empty(config('midtrans.client_key'));
+    }
+
+    /** Midtrans active jika toggle ON dan env key tersedia. */
+    private function midtransActive(): bool
+    {
+        $enabled = Setting::boolOf('midtrans_enabled', true);
+        return $enabled && $this->midtransConfigured();
     }
 
     /**
@@ -45,75 +49,12 @@ class PaymentController extends Controller
             return redirect()->route('payment.success', ['order_id' => $orderNumber]);
         }
 
-        // Jika Midtrans belum dikonfigurasi → tampilkan simulator
-        if (! $this->midtransConfigured()) {
-            return view('payment.mock', compact('order'));
+        // Manual payment fallback (integration OFF / config missing)
+        if (! $this->midtransActive()) {
+            return view('payment.manual', compact('order'));
         }
 
         return view('payment.show', compact('order'));
-    }
-
-    /**
-     * POST /payment/mock-simulate
-     * Simulator lokal: proses hasil pembayaran tanpa Midtrans.
-     * Hanya aktif ketika MIDTRANS_SERVER_KEY kosong.
-     */
-    public function mockSimulate(Request $request): RedirectResponse
-    {
-        abort_if($this->midtransConfigured(), 403, 'Mock simulator tidak aktif saat Midtrans sudah dikonfigurasi.');
-
-        $request->validate([
-            'order_number' => ['required', 'string'],
-            'result'       => ['required', 'in:success,pending,failed'],
-        ]);
-
-        $order = Order::query()
-            ->where('order_number', $request->order_number)
-            ->with('payment')
-            ->firstOrFail();
-
-        if ($order->user_id && $order->user_id !== $request->user()?->id) {
-            abort(403);
-        }
-
-        $payment = $order->payment ?? Payment::query()->firstOrCreate(
-            ['order_id' => $order->id],
-            ['provider' => 'mock', 'amount' => $order->total, 'currency' => $order->currency ?? 'IDR', 'status' => 'pending', 'payload' => []],
-        );
-
-        $now = now();
-
-        match ($request->result) {
-            'success' => [
-                $payment->update(['status' => 'paid', 'payment_type' => 'mock_transfer', 'paid_at' => $now, 'payload' => ['simulated' => true]]),
-                $order->update(['payment_status' => 'paid', 'status' => 'processing', 'paid_at' => $now]),
-                $this->orderService->deductStock($order),
-            ],
-            'pending' => [
-                $payment->update(['status' => 'pending', 'payload' => ['simulated' => true]]),
-                $order->update(['payment_status' => 'pending']),
-            ],
-            'failed' => [
-                $payment->update(['status' => 'failed', 'payload' => ['simulated' => true]]),
-                $order->update(['payment_status' => 'failed', 'status' => 'cancelled']),
-            ],
-        };
-
-        PaymentLog::query()->create([
-            'payment_id' => $payment->id,
-            'event'      => 'mock_simulate_' . $request->result,
-            'status'     => $payment->status,
-            'payload'    => ['result' => $request->result, 'simulated_at' => $now->toIso8601String()],
-            'logged_at'  => $now,
-        ]);
-
-        $redirectRoute = match ($request->result) {
-            'success' => route('payment.success', ['order_id' => $order->order_number]),
-            'pending' => route('payment.pending', ['order_id' => $order->order_number]),
-            default   => route('payment.failed',  ['order_id' => $order->order_number]),
-        };
-
-        return redirect($redirectRoute);
     }
 
     /**
@@ -122,6 +63,10 @@ class PaymentController extends Controller
      */
     public function token(Request $request): JsonResponse
     {
+        if (! $this->midtransActive()) {
+            return response()->json(['error' => 'Midtrans tidak aktif.'], 422);
+        }
+
         $request->validate(['order_id' => ['required', 'exists:orders,id']]);
 
         $order = Order::query()
@@ -155,6 +100,10 @@ class PaymentController extends Controller
      */
     public function notification(Request $request): JsonResponse
     {
+        if (! $this->midtransActive()) {
+            return response()->json(['message' => 'Midtrans disabled.'], 202);
+        }
+
         try {
             $notification = $this->midtrans->verifyNotification();
             $payload = (array) $notification;

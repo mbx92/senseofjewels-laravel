@@ -3,7 +3,7 @@
 @section('account-content')
 <div class="space-y-8 w-full">
     <div>
-        <h1 class="display-font text-4xl text-base-content font-normal lg:text-5xl">Pesanan Saya</h1>
+        <h1 class="display-font text-4xl text-base-content font-normal lg:text-5xl">{{ __('My Orders') }}</h1>
     </div>
 
     @if (session('status'))
@@ -13,8 +13,8 @@
     @if ($orders->isEmpty())
         <div class="card w-full border border-base-300 bg-base-200/70 shadow-sm">
             <div class="card-body min-h-72 items-center justify-center py-10 text-center sm:py-12">
-                <p class="mb-4 text-base-content/60">Anda belum memiliki pesanan.</p>
-                <a href="{{ route('shop.index') }}" class="btn btn-primary">Mulai Belanja</a>
+                <p class="mb-4 text-base-content/60">{{ __('You have no orders yet.') }}</p>
+                <a href="{{ route('shop.index') }}" class="btn btn-primary">{{ __('Start Shopping') }}</a>
             </div>
         </div>
     @else
@@ -23,11 +23,11 @@
                 <table class="table table-zebra">
                     <thead>
                         <tr>
-                            <th>No. Pesanan</th>
-                            <th>Tanggal</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Pembayaran</th>
+                            <th>{{ __('Order No.') }}</th>
+                            <th>{{ __('Date') }}</th>
+                            <th>{{ __('Total') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th>{{ __('Payment') }}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -36,7 +36,7 @@
                             <tr>
                                 <td class="font-mono font-semibold text-sm">{{ $order->order_number }}</td>
                                 <td class="text-sm">{{ $order->placed_at?->format('d/m/Y') }}</td>
-                                <td class="font-semibold">Rp {{ number_format($order->total, 0, ',', '.') }}</td>
+                                <td class="font-semibold">@money($order->total)</td>
                                 <td>
                                     @php
                                         $statusColor = match ($order->status) {
@@ -62,7 +62,7 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('orders.show', $order->order_number) }}"
-                                        class="btn btn-ghost btn-xs">Detail</a>
+                                        class="btn btn-ghost btn-xs">{{ __('Details') }}</a>
                                 </td>
                             </tr>
                         @endforeach

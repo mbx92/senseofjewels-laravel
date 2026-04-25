@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\InventoryLog;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use Illuminate\Support\Carbon;
@@ -122,8 +123,20 @@ class OrderService
      */
     public function deductStock(Order $order, ?int $adminUserId = null): void
     {
+        if (! Setting::boolOf('inventory_enabled', true)) {
+            return;
+        }
+
         foreach ($order->items()->with('product')->get() as $item) {
             if (! $item->product) {
+                continue;
+            }
+
+            $alreadyDeducted = InventoryLog::query()
+                ->where('order_item_id', $item->id)
+                ->where('type', 'out')
+                ->exists();
+            if ($alreadyDeducted) {
                 continue;
             }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\InventoryAdjustmentRequest;
 use App\Models\InventoryLog;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -19,12 +20,18 @@ class InventoryController extends Controller
             ->paginate(30);
 
         $products = Product::query()->where('is_active', true)->orderBy('name')->get();
+        $inventoryEnabled = Setting::boolOf('inventory_enabled', true);
 
-        return view('admin.inventory.index', compact('logs', 'products'));
+        return view('admin.inventory.index', compact('logs', 'products', 'inventoryEnabled'));
     }
 
     public function adjust(InventoryAdjustmentRequest $request): RedirectResponse
     {
+        if (! Setting::boolOf('inventory_enabled', true)) {
+            return redirect()->route('admin.inventory.index')
+                ->with('error', 'Inventory nonaktif. Penyesuaian stok tidak dapat dilakukan.');
+        }
+
         $product = Product::findOrFail($request->product_id);
         $before  = $product->stock;
 
