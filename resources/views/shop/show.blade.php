@@ -63,11 +63,22 @@
 
             {{-- Price --}}
             <div class="flex items-baseline gap-3 border-y border-base-200 py-5">
-                <span class="display-font text-3xl text-base-content">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                @if($product->discounted_price)
+                    @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
+                    <span class="display-font text-3xl text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span>
+                    <span class="display-font text-xl text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                    <span class="bg-error text-error-content text-[9px] font-bold uppercase tracking-widest px-2 py-1">-{{ $discountPct }}%</span>
+                @else
+                    <span class="display-font text-3xl text-base-content">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                @endif
                 @if($product->weight)
                 <span class="text-[11px] text-base-content/40 uppercase tracking-widest">{{ $product->weight }} g</span>
                 @endif
             </div>
+            @if($product->discounted_price)
+            @php $saveAmount = $product->price - $product->discounted_price; @endphp
+            <p class="text-[11px] text-success uppercase tracking-widest -mt-3">Hemat Rp {{ number_format($saveAmount, 0, ',', '.') }}</p>
+            @endif
 
             {{-- Short Description --}}
             @if($product->short_description)

@@ -70,7 +70,7 @@
                                 <img src="{{ Storage::url($img->path) }}" alt="{{ $img->alt_text }}"
                                     class="w-20 h-20 object-cover rounded border border-base-300 {{ $img->is_primary ? 'ring-2 ring-primary' : '' }}" />
                                 @if ($img->is_primary)
-                                    <span class="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-primary text-primary-content rounded-b">Utama</span>
+                                    <span class="absolute bottom-0 left-0 right-0 text-[9px] bg-primary text-primary-content text-center py-0.5">Utama</span>
                                 @endif
                                 <form method="POST" action="{{ route('admin.products.images.destroy', [$product, $img]) }}"
                                     class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"

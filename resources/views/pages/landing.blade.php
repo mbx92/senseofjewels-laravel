@@ -175,6 +175,70 @@
     </section>
 
     {{-- ====================================================
+         PROMO BANNERS — Active discounts with image
+    ===================================================== --}}
+    @if($promos->isNotEmpty())
+    <section class="py-10 md:py-14 bg-base-100 border-t border-base-200">
+        <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
+
+            <div class="text-center mb-8">
+                <span class="block text-primary uppercase tracking-[0.25em] text-[10px] mb-2">Penawaran Spesial</span>
+                <h2 class="display-font text-3xl md:text-4xl text-base-content">Promo Aktif</h2>
+            </div>
+
+            <div class="grid gap-4 {{ $promos->count() === 1 ? 'grid-cols-1 max-w-2xl mx-auto' : ($promos->count() === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3') }}">
+                @foreach($promos as $promo)
+                <a href="{{ route('shop.index') }}"
+                   class="group relative overflow-hidden aspect-[16/7] block border border-base-300 hover:border-primary/40 transition-colors duration-300">
+
+                    {{-- Background image or gradient fallback --}}
+                    @if($promo->image_url)
+                    <img src="{{ $promo->image_url }}" alt="{{ $promo->name }}"
+                         class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+                    @else
+                    <div class="absolute inset-0 bg-gradient-to-br from-neutral via-neutral/80 to-base-300 group-hover:scale-105 transition-transform duration-700"></div>
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_60%,rgba(191,160,84,0.25),transparent_55%)]"></div>
+                    @endif
+
+                    {{-- Content --}}
+                    <div class="absolute inset-0 flex flex-col justify-center px-8 py-6" style="z-index:10;">
+                        {{-- Badge type --}}
+                        @if($promo->discount)
+                        <span class="mb-2 w-fit bg-primary/90 text-primary-content text-[9px] uppercase tracking-[0.2em] px-3 py-1">
+                            {{ $promo->discount->type === 'percent' ? 'Diskon ' . number_format($promo->discount->value, 0) . '%' : 'Hemat Rp ' . number_format($promo->discount->value, 0, ',', '.') }}
+                        </span>
+                        @endif
+
+                        <h3 class="display-font text-white text-2xl md:text-3xl leading-tight mb-1">{{ $promo->code }}</h3>
+
+                        @if($promo->description)
+                        <p class="text-white/70 text-xs font-light mt-1 line-clamp-2">{{ $promo->description }}</p>
+                        @endif
+
+                        <div class="mt-4 flex flex-wrap items-center gap-3 text-[10px] text-white/60 uppercase tracking-widest">
+                            <span class="border border-white/30 px-3 py-1 font-mono tracking-wider text-white/90">{{ $promo->code }}</span>
+                            @if($promo->ends_at)
+                            <span>Berlaku s/d {{ $promo->ends_at->format('d M Y') }}</span>
+                            @endif
+                            @if($promo->minimum_order_amount > 0)
+                            <span>Min. order Rp {{ number_format($promo->minimum_order_amount, 0, ',', '.') }}</span>
+                            @endif
+                        </div>
+
+                        <span class="mt-5 w-fit border border-white/50 text-white text-[10px] uppercase tracking-[0.2em] px-5 py-2.5 group-hover:bg-white group-hover:text-neutral transition-all duration-300">
+                            Belanja Sekarang
+                        </span>
+                    </div>
+                </a>
+                @endforeach
+            </div>
+
+        </div>
+    </section>
+    @endif
+
+    {{-- ====================================================
          NEW ARRIVALS — 4 product cards
     ===================================================== --}}
     <section id="collection" class="py-20 md:py-28 bg-base-100 border-t border-base-200">
@@ -199,7 +263,7 @@
                         @endif
                         {{-- Badge --}}
                         @if($product->is_featured)
-                        <div class="absolute top-3 left-3 z-10">
+                        <div class="absolute top-3 right-3 z-10">
                             <span class="bg-base-100/90 px-3 py-1 text-[9px] uppercase tracking-widest text-base-content">Featured</span>
                         </div>
                         @endif
@@ -212,7 +276,12 @@
                     </div>
                     <div class="text-center px-1">
                         <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $product->name }}</h3>
-                        <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                        @if($product->discounted_price)
+                            @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
+                            <p class="text-[11px] tracking-widest"><span class="text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span> <span class="text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
+                        @else
+                            <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                        @endif
                     </div>
                 </a>
                 @empty
@@ -251,6 +320,9 @@
                         @else
                         <div class="absolute inset-0 bg-base-100"></div>
                         @endif
+                        <div class="absolute top-3 right-3 z-10">
+                            <span class="bg-base-100/90 px-3 py-1 text-[9px] uppercase tracking-widest text-base-content">Featured</span>
+                        </div>
                         <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-400 z-20">
                             <span class="block w-full bg-base-100/95 text-base-content py-2.5 uppercase tracking-widest text-[9px] font-semibold text-center">
                                 {{ __('View Product') }}
@@ -259,7 +331,12 @@
                     </div>
                     <div class="text-center px-1">
                         <h3 class="display-font text-lg text-base-content mb-1 group-hover:text-primary transition-colors">{{ $product->name }}</h3>
-                        <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                        @if($product->discounted_price)
+                            @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
+                            <p class="text-[11px] tracking-widest"><span class="text-error">Rp {{ number_format($product->discounted_price, 0, ',', '.') }}</span> <span class="text-base-content/40 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</span> <span class="bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span></p>
+                        @else
+                            <p class="text-[11px] text-base-content/60 tracking-widest">Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                        @endif
                     </div>
                 </a>
                 @endforeach

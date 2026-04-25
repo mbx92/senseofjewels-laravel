@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\DiscountService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ShopController extends Controller
 {
+    public function __construct(protected DiscountService $discountService) {}
+
     public function index(Request $request): View
     {
         $categories = Category::query()
@@ -40,6 +43,11 @@ class ShopController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        // Attach discounted price to each product
+        foreach ($products as $product) {
+            $product->discounted_price = $this->discountService->applyProductDiscount($product);
+        }
+
         return view('shop.index', compact('categories', 'products'));
     }
 
@@ -51,6 +59,8 @@ class ShopController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
+        $product->discounted_price = $this->discountService->applyProductDiscount($product);
+
         $relatedProducts = Product::query()
             ->with('images')
             ->where('is_active', true)
@@ -59,6 +69,10 @@ class ShopController extends Controller
             ->orderByDesc('is_featured')
             ->take(4)
             ->get();
+
+        foreach ($relatedProducts as $related) {
+            $related->discounted_price = $this->discountService->applyProductDiscount($related);
+        }
 
         return view('shop.show', compact('product', 'relatedProducts'));
     }

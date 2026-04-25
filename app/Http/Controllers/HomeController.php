@@ -3,14 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Page;
 use App\Models\Product;
 use App\Models\Section;
 use App\Models\Setting;
+use App\Models\Voucher;
+use App\Services\DiscountService;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    public function __construct(protected DiscountService $discountService) {}
+
     public function index(): View
     {
         $page = Page::query()->firstOrCreate(
@@ -50,6 +56,22 @@ class HomeController extends Controller
 
         $settings = Setting::query()->get()->keyBy('key');
 
-        return view('pages.landing', compact('sections', 'newArrivals', 'featuredProducts', 'categories', 'settings'));
+        foreach ($newArrivals as $p) {
+            $p->discounted_price = $this->discountService->applyProductDiscount($p);
+        }
+        foreach ($featuredProducts as $p) {
+            $p->discounted_price = $this->discountService->applyProductDiscount($p);
+        }
+
+        $promos = Voucher::query()
+            ->with('discount')
+            ->where('is_active', true)
+            ->where(fn($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', Carbon::now()))
+            ->where(fn($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>=', Carbon::now()))
+            ->orderByDesc('created_at')
+            ->limit(3)
+            ->get();
+
+        return view('pages.landing', compact('sections', 'newArrivals', 'featuredProducts', 'categories', 'settings', 'promos'));
     }
 }

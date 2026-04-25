@@ -43,11 +43,16 @@
                 <div class="group flex flex-col relative text-center">
                     <!-- Image -->
                     <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative border border-base-300 group-hover:border-primary/40 transition-colors">
-                        <div class="absolute inset-0 bg-gradient-to-tr from-base-200 to-base-300 flex items-center justify-center transition-transform duration-1000 group-hover:scale-105">
-                            <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">{{ __('View Details') }}</span>
-                        </div>
+                        @if($product->image_url)
+                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
+                                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+                        @else
+                            <div class="absolute inset-0 bg-gradient-to-tr from-base-200 to-base-300 flex items-center justify-center transition-transform duration-1000 group-hover:scale-105">
+                                <span class="text-base-content/30 tracking-[0.2em] text-[10px] uppercase">{{ __('View Details') }}</span>
+                            </div>
+                        @endif
                         @if ($product->is_featured)
-                            <div class="absolute top-4 left-4 z-10">
+                            <div class="absolute top-4 right-4 z-10">
                                 <span class="bg-base-100 px-3 py-1 text-[9px] uppercase tracking-widest">{{ __('Bestseller') }}</span>
                             </div>
                         @endif
@@ -71,7 +76,14 @@
                             {{ $product->name }}
                         </a>
                         <div class="font-light text-base-content/80 mt-1">
-                            <span class="text-xs">Rp</span> {{ number_format($product->price, 0, ',', '.') }}
+                            @if($product->discounted_price)
+                                @php $discountPct = round(($product->price - $product->discounted_price) / $product->price * 100); @endphp
+                                <span class="text-error font-medium"><span class="text-xs">Rp</span> {{ number_format($product->discounted_price, 0, ',', '.') }}</span>
+                                <span class="text-xs text-base-content/40 line-through ml-1">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                                <span class="ml-1 bg-error text-error-content text-[9px] font-bold px-1.5 py-0.5">-{{ $discountPct }}%</span>
+                            @else
+                                <span class="text-xs">Rp</span> {{ number_format($product->price, 0, ',', '.') }}
+                            @endif
                         </div>
                     </div>
                 </div>

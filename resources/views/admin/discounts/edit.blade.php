@@ -14,7 +14,8 @@
 
 <div class="card bg-base-100 shadow-sm max-w-xl">
     <div class="card-body gap-4">
-        <form method="POST" action="{{ route('admin.discounts.update', $discount) }}" class="space-y-4">
+        <form method="POST" action="{{ route('admin.discounts.update', $discount) }}" class="space-y-4"
+              x-data="{ appliesTo: '{{ old('applies_to', $discount->applies_to) }}' }">
             @csrf @method('PUT')
 
             <fieldset class="fieldset">
@@ -31,13 +32,45 @@
 
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend">Berlaku Untuk <span class="text-error">*</span></legend>
-                    <select name="applies_to" class="select w-full" required>
+                    <select name="applies_to" class="select w-full" x-model="appliesTo" required>
                         <option value="all" @selected(old('applies_to', $discount->applies_to) === 'all')>Semua Produk</option>
-                        <option value="category" @selected(old('applies_to', $discount->applies_to) === 'category')>Kategori</option>
+                        <option value="category" @selected(old('applies_to', $discount->applies_to) === 'category')>Kategori Tertentu</option>
                         <option value="product" @selected(old('applies_to', $discount->applies_to) === 'product')>Produk Tertentu</option>
                     </select>
                 </fieldset>
+            </div>
 
+            {{-- Pilih Kategori --}}
+            <fieldset class="fieldset" x-show="appliesTo === 'category'" x-cloak>
+                <legend class="fieldset-legend">Pilih Kategori <span class="text-error">*</span></legend>
+                <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-base-300 rounded p-3">
+                    @php $savedCategoryIds = old('category_ids', $discount->conditions['category_ids'] ?? []); @endphp
+                    @foreach($categories as $cat)
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="category_ids[]" value="{{ $cat->id }}" class="checkbox checkbox-sm checkbox-primary"
+                               @if(in_array($cat->id, $savedCategoryIds)) checked @endif />
+                        <span class="text-sm">{{ $cat->name }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            {{-- Pilih Produk --}}
+            <fieldset class="fieldset" x-show="appliesTo === 'product'" x-cloak>
+                <legend class="fieldset-legend">Pilih Produk <span class="text-error">*</span></legend>
+                <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-base-300 rounded p-3">
+                    @php $savedProductIds = old('product_ids', $discount->conditions['product_ids'] ?? []); @endphp
+                    @foreach($products as $prod)
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="product_ids[]" value="{{ $prod->id }}" class="checkbox checkbox-sm checkbox-primary"
+                               @if(in_array($prod->id, $savedProductIds)) checked @endif />
+                        <span class="text-sm">{{ $prod->name }}</span>
+                    </label>
+                    @endforeach
+                </div>
+            </fieldset>
+
+            <div class="grid gap-4 sm:grid-cols-2">
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend">Tipe Diskon <span class="text-error">*</span></legend>
                     <select name="type" class="select w-full" required>
@@ -49,16 +82,22 @@
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend">Nilai Diskon <span class="text-error">*</span></legend>
                     <input type="number" name="value" value="{{ old('value', $discount->value) }}" step="0.01" min="0" class="input w-full" required />
+                    <p class="fieldset-label text-base-content/50">Persen: isi 1–100 (tanpa simbol %). Nominal: isi jumlah Rupiah.</p>
                 </fieldset>
 
                 <fieldset class="fieldset">
                     <legend class="fieldset-legend">Min. Order (Rp)</legend>
                     <input type="number" name="minimum_order_amount" value="{{ old('minimum_order_amount', $discount->minimum_order_amount) }}" step="1" min="0" class="input w-full" />
+                    <p class="fieldset-label text-base-content/50">Diskon aktif jika subtotal ≥ nilai ini.</p>
                 </fieldset>
 
-                <fieldset class="fieldset">
-                    <legend class="fieldset-legend">Maks. Diskon (Rp)</legend>
+                <fieldset class="fieldset sm:col-span-2">
+                    <legend class="fieldset-legend">Maks. Potongan (Rp)</legend>
                     <input type="number" name="maximum_discount_amount" value="{{ old('maximum_discount_amount', $discount->maximum_discount_amount) }}" step="1" min="0" class="input w-full" />
+                    <p class="fieldset-label text-base-content/50">
+                        Batas atas potongan harga. <strong>Contoh:</strong> Diskon 50%, maks Rp 50.000 → produk Rp 200.000 hanya dapat potongan Rp 50.000 (efektif 25%), bukan Rp 100.000.
+                        Badge "%" di halaman toko <strong>otomatis dihitung dari harga aktual</strong>, sehingga selalu akurat ke customer.
+                    </p>
                 </fieldset>
 
                 <fieldset class="fieldset">
