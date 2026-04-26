@@ -7,7 +7,17 @@
         <a href="{{ route('orders.index') }}" class="text-[10px] uppercase tracking-[0.18em] font-semibold text-base-content/40 hover:text-primary transition-colors">← {{ __('Back to Orders') }}</a>
         <div class="flex items-end justify-between gap-4 flex-wrap">
             <h1 class="display-font text-3xl text-base-content font-normal">{{ $order->order_number }}</h1>
-            <span class="text-xs text-base-content/50 pb-1">{{ $order->placed_at?->format('d M Y') }}</span>
+            <div class="flex items-center gap-3 pb-1">
+                <span class="text-xs text-base-content/50">{{ $order->placed_at?->format('d M Y') }}</span>
+                <a href="{{ route('orders.invoice', $order->order_number) }}"
+                   target="_blank"
+                   class="inline-flex items-center gap-1.5 rounded-lg border border-base-300 bg-base-100 px-3 py-1.5 text-xs font-semibold text-base-content/70 shadow-sm hover:border-primary hover:text-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0-3-3m3 3 3-3M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M7 10V7a5 5 0 0 1 10 0v3"/>
+                    </svg>
+                    Download Invoice
+                </a>
+            </div>
         </div>
     </div>
 

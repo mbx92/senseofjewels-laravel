@@ -135,7 +135,7 @@
         </div>
     </div>
 
-    <div class="sticky bottom-0 z-30 bg-base-100/95 backdrop-blur border-t border-base-300 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] -mx-5 lg:-mx-8 px-5 lg:px-8">
+    <div class="fixed bottom-0 left-0 right-0 z-40 border-t border-base-300 bg-base-100/95 px-5 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] backdrop-blur lg:left-72 lg:px-8">
         <div class="max-w-5xl mx-auto px-6 py-3">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <label class="label cursor-pointer justify-start gap-4">

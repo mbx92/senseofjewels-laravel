@@ -39,13 +39,47 @@ class SectionController extends Controller
     {
         $page = $this->getHomePage();
 
+        $heroSlides = [];
+        if ($request->filled('hero_slides')) {
+            $decodedSlides = json_decode((string) $request->hero_slides, true);
+            if (is_array($decodedSlides)) {
+                $heroSlides = collect($decodedSlides)
+                    ->filter(fn ($slide) => is_array($slide))
+                    ->map(function (array $slide) {
+                        $focusX = (int) ($slide['focus_x'] ?? 50);
+                        $focusY = (int) ($slide['focus_y'] ?? 50);
+                        $zoom = (int) ($slide['zoom'] ?? 100);
+
+                        return [
+                            'image' => trim((string) ($slide['image'] ?? '')),
+                            'title' => trim((string) ($slide['title'] ?? '')),
+                            'subtitle' => trim((string) ($slide['subtitle'] ?? '')),
+                            'description' => trim((string) ($slide['description'] ?? '')),
+                            'cta_text' => trim((string) ($slide['cta_text'] ?? '')),
+                            'cta_url' => trim((string) ($slide['cta_url'] ?? '')),
+                            'text_position' => trim((string) ($slide['text_position'] ?? '')) ?: 'top-left',
+                            'focus_x' => max(0, min(100, $focusX)),
+                            'focus_y' => max(0, min(100, $focusY)),
+                            'zoom' => max(80, min(160, $zoom)),
+                        ];
+                    })
+                    ->filter(function (array $slide) {
+                        return $slide['image'] !== '' || $slide['title'] !== '' || $slide['description'] !== '' || $slide['cta_text'] !== '';
+                    })
+                    ->values()
+                    ->all();
+            }
+        }
+
+        $primarySlide = $heroSlides[0] ?? null;
+
         $data = [
             'type'      => 'hero',
-            'title'     => $request->title,
-            'subtitle'  => $request->subtitle,
-            'content'   => $request->description,
-            'cta_text'  => $request->cta_text,
-            'cta_url'   => $request->cta_url,
+            'title'     => $primarySlide['title'] ?? $request->title,
+            'subtitle'  => $primarySlide['subtitle'] ?? $request->subtitle,
+            'content'   => $primarySlide['description'] ?? $request->description,
+            'cta_text'  => $primarySlide['cta_text'] ?? $request->cta_text,
+            'cta_url'   => $primarySlide['cta_url'] ?? $request->cta_url,
             'is_active' => $request->boolean('is_active'),
             'settings'  => [
                 'season_badge'     => $request->season_badge,
@@ -62,16 +96,22 @@ class SectionController extends Controller
                 'banner2_cta_text' => $request->banner2_cta_text,
                 'banner2_cta_url'  => $request->banner2_cta_url,
                 'banner2_image'    => $request->banner2_image,
-                'text_position'         => $request->text_position,
+                'text_position'         => $primarySlide['text_position'] ?? $request->text_position,
                 'banner1_text_position' => $request->banner1_text_position,
                 'banner2_text_position' => $request->banner2_text_position,
+                'hero_slides'           => $heroSlides,
             ],
         ];
 
-        // Hero images carousel (JSON array from multi-picker)
-        $heroImages = [];
-        if ($request->filled('hero_images')) {
-            $decoded = json_decode($request->hero_images, true);
+        // Backward compatibility for views/services that still consume hero_images.
+        $heroImages = collect($heroSlides)
+            ->pluck('image')
+            ->filter(fn ($url) => ! empty($url))
+            ->values()
+            ->all();
+
+        if (empty($heroImages) && $request->filled('hero_images')) {
+            $decoded = json_decode((string) $request->hero_images, true);
             if (is_array($decoded)) {
                 $heroImages = array_values(array_filter($decoded));
             }

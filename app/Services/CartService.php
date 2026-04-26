@@ -18,7 +18,13 @@ class CartService
         $sessionId = Session::getId();
 
         if (Auth::check()) {
-            $sessionCart = Cart::query()->where('session_id', $sessionId)->first();
+            $sessionCart = Cart::query()
+                ->where('session_id', $sessionId)
+                ->where(function ($q) {
+                    $q->whereNull('user_id')
+                        ->orWhere('user_id', Auth::id());
+                })
+                ->first();
 
             if ($sessionCart) {
                 if (! $sessionCart->user_id) {
@@ -41,7 +47,7 @@ class CartService
         }
 
         return Cart::query()->firstOrCreate(
-            ['session_id' => $sessionId],
+            ['session_id' => $sessionId, 'user_id' => null],
             ['currency' => 'IDR'],
         );
     }
@@ -115,9 +121,15 @@ class CartService
     /**
      * Merge anonymous session cart into the authenticated user's cart after login.
      */
-    public function merge(int $userId): void
+    public function merge(int $userId, ?string $fromSessionId = null, ?string $toSessionId = null): void
     {
-        $sessionCart = Cart::query()->where('session_id', Session::getId())->first();
+        $fromSessionId = $fromSessionId ?: Session::getId();
+        $toSessionId = $toSessionId ?: Session::getId();
+
+        $sessionCart = Cart::query()
+            ->where('session_id', $fromSessionId)
+            ->whereNull('user_id')
+            ->first();
 
         if (! $sessionCart || $sessionCart->items()->doesntExist()) {
             return;
@@ -125,8 +137,14 @@ class CartService
 
         $userCart = Cart::query()->firstOrCreate(
             ['user_id' => $userId],
-            ['session_id' => Session::getId(), 'currency' => 'IDR'],
+            ['session_id' => $toSessionId, 'currency' => 'IDR'],
         );
+
+        if ($userCart->id === $sessionCart->id) {
+            $sessionCart->update(['user_id' => $userId, 'session_id' => $toSessionId]);
+            $this->syncTotals($sessionCart);
+            return;
+        }
 
         foreach ($sessionCart->items as $sessionItem) {
             $existing = $userCart->items()->where('product_id', $sessionItem->product_id)->first();
@@ -147,6 +165,10 @@ class CartService
 
         $sessionCart->items()->delete();
         $sessionCart->delete();
+
+        if ($userCart->session_id !== $toSessionId) {
+            $userCart->update(['session_id' => $toSessionId]);
+        }
 
         $this->syncTotals($userCart);
     }

@@ -7,6 +7,7 @@
     :disabled="!$inventoryEnabled"
     title="Fitur ini tidak aktif"
     description="Silakan aktifkan di halaman Settings > Commerce"
+    :show-overlay="false"
 >
 <div class="space-y-6">
 <div class="space-y-1">

@@ -46,7 +46,10 @@
             @foreach ($products as $product)
                 <div class="group flex flex-col relative text-center">
                     <!-- Image -->
-                    <a href="{{ route('shop.show', $product->slug) }}" class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative border border-base-300 group-hover:border-primary/40 transition-colors">
+                    <div class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative border border-base-300 group-hover:border-primary/40 transition-colors">
+                        <a href="{{ route('shop.show', $product->slug) }}" class="absolute inset-0 z-10 block" aria-label="{{ $product->name }}">
+                            <span class="sr-only">{{ $product->name }}</span>
+                        </a>
                         @if($product->image_url)
                             <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                                  class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
@@ -63,15 +66,20 @@
                         
                         <!-- Quick Actions -->
                         <div class="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-4 transition-all duration-500 z-20">
-                            <form method="POST" action="{{ route('cart.store') }}">
+                            <form method="POST" action="{{ route('cart.store') }}" class="js-add-to-cart-form">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <button type="submit" class="w-full bg-base-100 text-base-content py-3 uppercase tracking-widest text-[10px] font-semibold hover:bg-neutral hover:text-white transition-colors">
-                                    {{ __('Add to Cart') }}
+                                <button type="submit" class="js-add-to-cart-btn inline-flex w-full items-center justify-center gap-2 bg-base-100 py-3 text-[10px] font-semibold uppercase tracking-widest text-base-content transition-colors hover:bg-neutral hover:text-white">
+                                    <svg class="js-add-to-cart-spinner hidden h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"></circle>
+                                        <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                                    </svg>
+                                    <span class="js-add-to-cart-label">{{ __('Add to Cart') }}</span>
                                 </button>
+                                <div class="js-add-to-cart-error mt-2 hidden rounded-md bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-700"></div>
                             </form>
                         </div>
-                    </a>
+                    </div>
                     
                     <!-- Content -->
                     <div class="flex flex-col grow pt-1 pb-4">
@@ -103,3 +111,4 @@
     @endif
 </div>
 @endsection
+

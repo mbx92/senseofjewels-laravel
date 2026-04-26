@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+    @php $inventoryEnabled = \App\Models\Setting::boolOf('inventory_enabled', true); @endphp
 
     {{-- Header --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -44,7 +45,7 @@
                             <td class="text-center">
                                 <form method="POST" action="{{ route('cart.update', $item) }}" class="inline-flex items-center gap-1">
                                     @csrf @method('PATCH')
-                                    <input type="number" name="quantity" min="1" value="{{ $item->quantity }}"
+                                    <input type="number" name="quantity" min="1" @if($inventoryEnabled && $item->product) max="{{ $item->product->stock }}" @endif value="{{ $item->quantity }}"
                                         class="input input-bordered input-sm w-16 text-center" />
                                     <button class="btn btn-ghost btn-xs text-base-content/50 hover:text-base-content" title="{{ __('Update') }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>

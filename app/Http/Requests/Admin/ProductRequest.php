@@ -32,6 +32,7 @@ class ProductRequest extends FormRequest
             'images.*'            => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'media_image_urls'    => ['nullable', 'array', 'max:8'],
             'media_image_urls.*'  => ['nullable', 'string', 'max:500'],
+            'media_image_urls_json' => ['nullable', 'string', 'max:10000'],
         ];
     }
 }

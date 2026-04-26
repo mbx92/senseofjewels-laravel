@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Cart;
 use App\Models\Setting;
 use App\Services\CurrencyService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -47,10 +48,13 @@ class AppServiceProvider extends ServiceProvider
                 $sessionId = request()->session()->getId();
                 $count = 0;
                 if ($sessionId && Schema::hasTable('carts')) {
-                    $cart = Cart::query()
-                        ->where('session_id', $sessionId)
-                        ->withCount('items')
-                        ->first();
+                    $cartQuery = Cart::query()->withCount('items');
+                    if (Auth::check()) {
+                        $cartQuery->where('user_id', Auth::id());
+                    } else {
+                        $cartQuery->where('session_id', $sessionId)->whereNull('user_id');
+                    }
+                    $cart = $cartQuery->first();
                     $count = $cart?->items_count ?? 0;
                 }
             } catch (\Throwable) {

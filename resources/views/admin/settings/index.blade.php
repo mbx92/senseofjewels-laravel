@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="max-w-3xl space-y-10" x-data="{ tab: 'general' }">
+<div class="max-w-5xl space-y-8" x-data="{ tab: 'general' }">
 
     {{-- Heading --}}
     <div class="space-y-1">
@@ -9,18 +9,19 @@
         <h1 class="display-font text-4xl text-base-content font-normal">Settings</h1>
     </div>
 
+    <div class="rounded-box border border-base-300 bg-base-100 p-5 shadow-sm md:p-6">
     {{-- Tab bar --}}
-    <div class="flex items-center gap-0 border-b border-base-300 overflow-x-auto no-scrollbar">
+    <div class="mb-8 flex flex-wrap items-center gap-0 border-b border-base-300">
         @foreach(['general' => 'General', 'contact' => 'Contact', 'social' => 'Social', 'seo' => 'SEO', 'commerce' => 'Commerce', 'colors' => 'Colors'] as $key => $label)
-        <button @click="tab = '{{ $key }}'"
-                class="shrink-0 px-5 py-3 text-[10px] uppercase tracking-widest border-b-2 -mb-px transition-colors"
-                :class="tab === '{{ $key }}' ? 'border-primary text-primary' : 'border-transparent text-base-content/50 hover:text-base-content'">
-            {{ $label }}
-        </button>
+            <button @click="tab = '{{ $key }}'" type="button"
+                    class="px-5 py-3 text-[10px] uppercase tracking-widest border-b-2 -mb-px transition-colors"
+                    :class="tab === '{{ $key }}' ? 'border-primary text-primary' : 'border-transparent text-base-content/50 hover:text-base-content'">
+                {{ $label }}
+            </button>
         @endforeach
     </div>
 
-    <form method="POST" action="{{ route('admin.settings.update') }}">
+    <form method="POST" action="{{ route('admin.settings.update') }}" class="space-y-2">
         @csrf @method('PUT')
 
         {{-- GENERAL --}}
@@ -108,6 +109,16 @@
                            class="w-full border-b border-base-content/20 bg-transparent py-2.5 text-sm focus:outline-none focus:border-primary transition-colors">
                 </div>
                 @endforeach
+            </div>
+            <div class="flex items-center gap-4 pt-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="hidden" name="instagram_feed_enabled" value="0">
+                    <input type="checkbox" name="instagram_feed_enabled" value="1"
+                           class="toggle toggle-sm toggle-primary"
+                           {{ ($settings['instagram_feed_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                    <span class="text-sm text-base-content/70">Tampilkan Instagram Feed di Landing</span>
+                </label>
+                <span class="text-[11px] text-base-content/40">Matikan jika ingin menyembunyikan blok feed Instagram.</span>
             </div>
         </div>
 
@@ -219,5 +230,6 @@
 
     </form>
 
+</div>
 </div>
 @endsection

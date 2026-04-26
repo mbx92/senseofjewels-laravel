@@ -5,11 +5,13 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\InventoryLog;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OrderService
@@ -127,34 +129,58 @@ class OrderService
             return;
         }
 
-        foreach ($order->items()->with('product')->get() as $item) {
-            if (! $item->product) {
-                continue;
+        DB::transaction(function () use ($order, $adminUserId): void {
+            $items = $order->items()->get();
+            if ($items->isEmpty()) {
+                return;
             }
 
-            $alreadyDeducted = InventoryLog::query()
-                ->where('order_item_id', $item->id)
-                ->where('type', 'out')
-                ->exists();
-            if ($alreadyDeducted) {
-                continue;
+            $lockedProducts = Product::query()
+                ->whereIn('id', $items->pluck('product_id')->filter()->unique()->values())
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($items as $item) {
+                if (! $item->product_id) {
+                    continue;
+                }
+
+                $alreadyDeducted = InventoryLog::query()
+                    ->where('order_item_id', $item->id)
+                    ->where('type', 'out')
+                    ->exists();
+                if ($alreadyDeducted) {
+                    continue;
+                }
+
+                /** @var Product|null $product */
+                $product = $lockedProducts->get($item->product_id);
+                if (! $product) {
+                    continue;
+                }
+
+                $before = (int) $product->stock;
+                $required = (int) $item->quantity;
+
+                if ($required > $before) {
+                    throw new \RuntimeException("Insufficient stock for product #{$product->id} in order {$order->order_number}.");
+                }
+
+                $after = $before - $required;
+                $product->update(['stock' => $after]);
+
+                InventoryLog::query()->create([
+                    'product_id'    => $item->product_id,
+                    'user_id'       => $adminUserId,
+                    'order_item_id' => $item->id,
+                    'type'          => 'out',
+                    'quantity'      => $required,
+                    'stock_before'  => $before,
+                    'stock_after'   => $after,
+                    'note'          => "Order #{$order->order_number}",
+                ]);
             }
-
-            $before = $item->product->stock;
-            $after  = max(0, $before - $item->quantity);
-
-            $item->product->update(['stock' => $after]);
-
-            InventoryLog::query()->create([
-                'product_id'   => $item->product_id,
-                'user_id'      => $adminUserId,
-                'order_item_id' => $item->id,
-                'type'         => 'out',
-                'quantity'     => $item->quantity,
-                'stock_before' => $before,
-                'stock_after'  => $after,
-                'note'         => "Order #{$order->order_number}",
-            ]);
-        }
+        }, 3);
     }
 }

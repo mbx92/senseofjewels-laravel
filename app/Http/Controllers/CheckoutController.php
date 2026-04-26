@@ -90,6 +90,22 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('error', 'Keranjang Anda kosong.');
         }
 
+        if (Setting::boolOf('inventory_enabled', true)) {
+            $cart->loadMissing('items.product');
+            foreach ($cart->items as $item) {
+                if (! $item->product) {
+                    return redirect()->route('cart.index')->with('error', 'Produk pada keranjang tidak ditemukan.');
+                }
+
+                if ($item->quantity > $item->product->stock) {
+                    return redirect()->route('cart.index')->with(
+                        'error',
+                        "Stok {$item->product->name} tersisa {$item->product->stock}. Silakan sesuaikan jumlah."
+                    );
+                }
+            }
+        }
+
         // Resolve voucher
         $voucherId = null;
         if (! empty($validated['voucher_code'])) {

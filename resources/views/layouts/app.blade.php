@@ -51,9 +51,7 @@
                 </a>
                 <a href="{{ route('cart.index') }}" wire:navigate class="relative inline-flex h-8 w-8 items-center justify-center p-2 text-base-content/70 hover:text-base-content">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    @if(!empty($navCartCount) && $navCartCount > 0)
-                    <span class="absolute top-0 right-0 flex h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount }}</span>
-                    @endif
+                    <span data-cart-count-badge class="absolute top-0 right-0 {{ !empty($navCartCount) && $navCartCount > 0 ? 'flex' : 'hidden' }} h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount > 0 ? $navCartCount : '' }}</span>
                 </a>
             </div>
 
@@ -109,9 +107,7 @@
                     <!-- Cart Icon -->
                     <a href="{{ route('cart.index') }}" wire:navigate class="relative inline-flex h-8 w-8 items-center justify-center text-base-content/50 hover:text-base-content transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                        @if(!empty($navCartCount) && $navCartCount > 0)
-                        <span class="absolute top-0 right-0 flex h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount }}</span>
-                        @endif
+                        <span data-cart-count-badge class="absolute top-0 right-0 {{ !empty($navCartCount) && $navCartCount > 0 ? 'flex' : 'hidden' }} h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount > 0 ? $navCartCount : '' }}</span>
                     </a>
                     <!-- WA CTA -->
                     <a href="https://wa.me/6281200000000" target="_blank" class="text-[10px] uppercase tracking-[0.18em] font-bold bg-neutral text-neutral-content px-4 py-2.5 hover:bg-primary hover:text-primary-content transition-colors whitespace-nowrap">
@@ -164,8 +160,56 @@
     </header>
     <!-- ========== END SITE HEADER ========== -->
 
+    <div
+        id="app-toast-container"
+        x-data="{
+            toasts: [],
+            push(detail) {
+                if (!detail || !detail.message) return;
+                const toast = {
+                    id: Date.now() + Math.random(),
+                    message: detail.message,
+                    type: detail.type || 'info',
+                };
+                this.toasts.push(toast);
+                setTimeout(() => this.remove(toast.id), 1800);
+            },
+            remove(id) {
+                this.toasts = this.toasts.filter((t) => t.id !== id);
+            }
+        }"
+        @app-toast.window="push($event.detail)"
+        class="pointer-events-none fixed right-4 top-24 z-[80] flex w-[min(92vw,360px)] flex-col gap-2"
+    >
+        <template x-for="toast in toasts" :key="toast.id">
+            <div
+                x-transition.opacity.duration.200ms
+                class="pointer-events-auto inline-flex items-center gap-2 rounded-lg px-4 py-3 text-xs font-semibold uppercase tracking-widest shadow-lg"
+                :class="{
+                    'bg-green-600 text-white': toast.type === 'success',
+                    'bg-red-600 text-white': toast.type === 'error',
+                    'bg-slate-700 text-white': toast.type !== 'success' && toast.type !== 'error'
+                }"
+            >
+                <span x-text="toast.message"></span>
+            </div>
+        </template>
+    </div>
+
     <!-- Main Content -->
     <main class="grow flex w-full flex-col overflow-x-hidden">
+        @if(session('cart_added'))
+            <div x-data="{ show: true }"
+                 x-init="setTimeout(() => show = false, 1800)"
+                 x-show="show"
+                 x-transition.opacity.duration.200ms
+                 class="pointer-events-none fixed right-4 top-24 z-[70]">
+                <div class="inline-flex items-center gap-2 rounded-full bg-success px-4 py-2 text-xs font-semibold uppercase tracking-widest text-success-content shadow-lg">
+                    <span>{{ session('cart_added') }}</span>
+                </div>
+            </div>
+        @endif
+
         @isset($slot)
             {{ $slot }}
         @else
@@ -217,6 +261,120 @@
             </aside>
         </div>
     </div>
+    <script>
+        (function () {
+            window.showAppToast = function (message, type = 'success') {
+                if (!message) return;
+
+                const now = Date.now();
+                const signature = `${type}::${message}`;
+                if (window.__lastAppToastSignature === signature && (now - (window.__lastAppToastAt || 0)) < 400) {
+                    return;
+                }
+                window.__lastAppToastSignature = signature;
+                window.__lastAppToastAt = now;
+
+                window.dispatchEvent(new CustomEvent('app-toast', {
+                    detail: { message, type }
+                }));
+            };
+
+            const updateCartBadges = (count) => {
+                document.querySelectorAll('[data-cart-count-badge]').forEach((badge) => {
+                    badge.textContent = count > 0 ? String(count) : '';
+                    badge.classList.toggle('hidden', count <= 0);
+                    badge.classList.toggle('flex', count > 0);
+                });
+            };
+
+            const setButtonState = (form, state, text) => {
+                const button = form.querySelector('.js-add-to-cart-btn');
+                const spinner = form.querySelector('.js-add-to-cart-spinner');
+                const label = form.querySelector('.js-add-to-cart-label');
+
+                if (!button) return;
+
+                const isLoading = state === 'loading';
+                button.disabled = isLoading;
+                button.classList.toggle('opacity-70', isLoading);
+                button.classList.toggle('opacity-80', isLoading);
+                button.classList.toggle('cursor-wait', isLoading);
+                spinner?.classList.toggle('hidden', !isLoading);
+                if (label && text) label.textContent = text;
+            };
+
+            const setInlineError = (form, message = '') => {
+                const box = form.querySelector('.js-add-to-cart-error');
+                if (!box) return;
+                if (!message) {
+                    box.textContent = '';
+                    box.classList.add('hidden');
+                    return;
+                }
+                box.textContent = message;
+                box.classList.remove('hidden');
+            };
+
+            document.addEventListener('submit', async (event) => {
+                const form = event.target.closest('.js-add-to-cart-form');
+                if (!form) return;
+
+                event.preventDefault();
+
+                const button = form.querySelector('.js-add-to-cart-btn');
+                if (button?.disabled) return;
+
+                const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                const quantityInput = form.querySelector('input[name="quantity"]');
+                if (quantityInput && quantityInput.max) {
+                    const maxQty = Number(quantityInput.max);
+                    const qty = Number(quantityInput.value || 1);
+                    if (maxQty > 0 && qty > maxQty) {
+                        const msg = `Maksimal ${maxQty} item untuk stok saat ini.`;
+                        setInlineError(form, msg);
+                        window.showAppToast(msg, 'error');
+                        return;
+                    }
+                }
+
+                setInlineError(form, '');
+                setButtonState(form, 'loading', 'Adding...');
+
+                try {
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        body: new FormData(form),
+                        credentials: 'same-origin',
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || !data.ok) {
+                        throw new Error(data.message || 'Failed to add item.');
+                    }
+
+                    updateCartBadges(Number(data.cart_count || 0));
+                    setButtonState(form, 'idle', data.added_text || 'Added ✓');
+                    window.showAppToast(data.message || 'Added ✓', 'success');
+                    setInlineError(form, '');
+
+                    setTimeout(() => {
+                        setButtonState(form, 'idle', 'Add to Cart');
+                    }, 1200);
+                } catch (error) {
+                    setButtonState(form, 'idle', 'Try Again');
+                    const message = error?.message || 'Gagal menambahkan item.';
+                    setInlineError(form, message);
+                    window.showAppToast(message, 'error');
+                }
+            }, true);
+        })();
+    </script>
+    @stack('scripts')
     @livewireScripts
 </body>
 </html>

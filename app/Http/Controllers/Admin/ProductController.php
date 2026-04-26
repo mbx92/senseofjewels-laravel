@@ -33,7 +33,7 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls', 'specifications_text']);
+        $data               = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
         $data['slug']       = Str::slug($request->name) . '-' . Str::random(4);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active', true);
@@ -55,10 +55,11 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->filled('media_image_urls')) {
+        $mediaUrls = $this->extractMediaImageUrls($request);
+        if ($mediaUrls !== []) {
             $fileCount = $request->hasFile('images') ? count($request->file('images')) : 0;
-            foreach (array_filter((array) $request->input('media_image_urls')) as $index => $url) {
-                $path = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
+            foreach ($mediaUrls as $index => $url) {
+                $path = $this->mediaUrlToPath($url);
                 ProductImage::query()->create([
                     'product_id' => $product->id,
                     'path'       => $path,
@@ -83,7 +84,7 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls', 'specifications_text']);
+        $data               = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_active']  = $request->boolean('is_active');
         $data['specifications'] = $this->parseSpecifications($request->input('specifications_text'));
@@ -104,11 +105,12 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->filled('media_image_urls')) {
+        $mediaUrls = $this->extractMediaImageUrls($request);
+        if ($mediaUrls !== []) {
             $existingCount = $product->images()->count();
             $fileCount = $request->hasFile('images') ? count($request->file('images')) : 0;
-            foreach (array_filter((array) $request->input('media_image_urls')) as $index => $url) {
-                $path = ltrim(str_replace(Storage::disk('public')->url(''), '', $url), '/');
+            foreach ($mediaUrls as $index => $url) {
+                $path = $this->mediaUrlToPath($url);
                 ProductImage::query()->create([
                     'product_id' => $product->id,
                     'path'       => $path,
@@ -175,5 +177,45 @@ class ProductController extends Controller
         }
 
         return $specifications !== [] ? $specifications : null;
+    }
+
+    private function extractMediaImageUrls(ProductRequest $request): array
+    {
+        if ($request->filled('media_image_urls_json')) {
+            $decoded = json_decode((string) $request->input('media_image_urls_json'), true);
+            if (is_array($decoded)) {
+                return array_values(array_filter(array_map('trim', $decoded)));
+            }
+        }
+
+        if ($request->filled('media_image_urls')) {
+            return array_values(array_filter(array_map('trim', (array) $request->input('media_image_urls'))));
+        }
+
+        return [];
+    }
+
+    private function mediaUrlToPath(string $url): string
+    {
+        $url = trim($url);
+        $storagePrefix = '/storage/';
+
+        if (Str::startsWith($url, ['http://', 'https://'])) {
+            $url = parse_url($url, PHP_URL_PATH) ?: $url;
+        }
+
+        if (Str::startsWith($url, $storagePrefix)) {
+            return ltrim(Str::after($url, $storagePrefix), '/');
+        }
+
+        $publicBaseUrl = Storage::disk('public')->url('');
+        $normalized = str_replace('\\', '/', $url);
+        $normalizedBase = str_replace('\\', '/', $publicBaseUrl);
+
+        if ($normalizedBase !== '' && Str::startsWith($normalized, $normalizedBase)) {
+            return ltrim(Str::after($normalized, $normalizedBase), '/');
+        }
+
+        return ltrim($normalized, '/');
     }
 }

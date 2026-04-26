@@ -147,7 +147,15 @@ class MidtransService
 
         // Deduct stock on first successful payment
         if ($paymentStatus === 'paid' && $order->fulfillment_status === 'unfulfilled') {
-            app(OrderService::class)->deductStock($order);
+            try {
+                app(OrderService::class)->deductStock($order);
+            } catch (\Throwable $e) {
+                Log::error('Stock deduction failed after successful payment.', [
+                    'order_number' => $order->order_number,
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 

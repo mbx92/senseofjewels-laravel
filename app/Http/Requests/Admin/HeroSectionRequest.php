@@ -15,13 +15,14 @@ class HeroSectionRequest extends FormRequest
     {
         return [
             // Panel 1 — Campaign Hero
-            'title'                => ['required', 'string', 'max:40'],
+            'title'                => ['nullable', 'string', 'max:40'],
             'subtitle'             => ['nullable', 'string', 'max:40'],
             'description'          => ['nullable', 'string', 'max:500'],
             'season_badge'         => ['nullable', 'string', 'max:80'],
             'eyebrow'              => ['nullable', 'string', 'max:80'],
             'cta_text'             => ['nullable', 'string', 'max:80'],
             'cta_url'              => ['nullable', 'string', 'max:255'],
+            'hero_slides'          => ['nullable', 'string'],
             'background_image_url' => ['nullable', 'string', 'max:500'],
             // Panel 2 — Product Banner
             'banner1_label'        => ['nullable', 'string', 'max:80'],

@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Page;
+use App\Models\PortfolioItem;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\Section;
 use App\Models\Setting;
 use App\Models\Voucher;
@@ -26,6 +28,7 @@ class HomeController extends Controller
 
         $sections = Section::query()
             ->where('page_id', $page->id)
+            ->where('is_active', true)
             ->get()
             ->keyBy('key');
 
@@ -54,6 +57,18 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
+        $services = Service::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->limit(6)
+            ->get();
+
+        $portfolioItems = PortfolioItem::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->limit(6)
+            ->get();
+
         $settings = Setting::query()->pluck('value', 'key');
 
         foreach ($newArrivals as $p) {
@@ -72,6 +87,15 @@ class HomeController extends Controller
             ->limit(3)
             ->get();
 
-        return view('pages.landing', compact('sections', 'newArrivals', 'featuredProducts', 'categories', 'settings', 'promos'));
+        return view('pages.landing', compact(
+            'sections',
+            'newArrivals',
+            'featuredProducts',
+            'categories',
+            'services',
+            'portfolioItems',
+            'settings',
+            'promos'
+        ));
     }
 }

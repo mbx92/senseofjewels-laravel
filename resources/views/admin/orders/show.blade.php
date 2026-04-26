@@ -12,7 +12,17 @@
             <p class="text-sm text-base-content/60">Detail order ditata ulang agar status, alamat, dan item lebih mudah dipindai.</p>
         </div>
     </div>
-    <span class="badge badge-outline badge-sm w-fit">{{ $order->placed_at?->format('d M Y') }}</span>
+    <div class="flex items-center gap-2">
+        <span class="badge badge-outline badge-sm w-fit">{{ $order->placed_at?->format('d M Y') }}</span>
+        <a href="{{ route('admin.orders.invoice', $order->order_number) }}"
+           target="_blank"
+           class="btn btn-sm btn-outline gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0-3-3m3 3 3-3M3 17v2a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2M7 10V7a5 5 0 0 1 10 0v3"/>
+            </svg>
+            Download Invoice
+        </a>
+    </div>
 </div>
 
 <div class="grid gap-6 xl:grid-cols-3">
@@ -21,35 +31,32 @@
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <h2 class="card-title text-base">Perbarui Status</h2>
-            <form method="POST" action="{{ route('admin.orders.updateStatus', $order) }}" class="space-y-3">
+            <form method="POST" action="{{ route('admin.orders.updateStatus', $order) }}" class="space-y-4">
                 @csrf @method('PATCH')
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Status Pesanan</span></label>
-                    <select name="status" class="select select-bordered select-sm" required>
+                <div class="space-y-1.5">
+                    <label for="order_status" class="block text-sm font-medium text-base-content/70">Status Pesanan</label>
+                    <select id="order_status" name="status" class="select select-bordered select-sm w-full" required>
                         @foreach (['pending','processing','shipped','delivered','completed','cancelled'] as $s)
                             <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Status Pembayaran</span></label>
-                    <select name="payment_status" class="select select-bordered select-sm">
+                <div class="space-y-1.5">
+                    <label for="payment_status" class="block text-sm font-medium text-base-content/70">Status Pembayaran</label>
+                    <select id="payment_status" name="payment_status" class="select select-bordered select-sm w-full">
                         @foreach (['pending','paid','failed','refunded'] as $p)
                             <option value="{{ $p }}" @selected($order->payment_status === $p)>{{ ucfirst($p) }}</option>
                         @endforeach
                     </select>
-                    <label class="label pt-1">
-                        <span class="label-text-alt text-base-content/50">
-                            Provider: {{ strtoupper($order->payment?->provider ?? 'manual') }}
-                        </span>
-                    </label>
+                    <p class="text-xs text-base-content/50">Provider: {{ strtoupper($order->payment?->provider ?? 'manual') }}</p>
                 </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">No. Resi (opsional)</span></label>
+                <div class="space-y-1.5">
+                    <label for="tracking_number" class="block text-sm font-medium text-base-content/70">No. Resi (opsional)</label>
                     <input type="text" name="tracking_number"
+                        id="tracking_number"
                         value="{{ $order->shipping_address['tracking'] ?? '' }}"
                         placeholder="JNE123456789"
-                        class="input input-bordered input-sm" />
+                        class="input input-bordered input-sm w-full" />
                 </div>
                 <button type="submit" class="btn btn-primary btn-sm w-full">Simpan</button>
             </form>

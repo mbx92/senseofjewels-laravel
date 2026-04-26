@@ -104,20 +104,26 @@
                 </div>
 
                 @if($canPurchase)
-                <form method="POST" action="{{ route('cart.store') }}" class="space-y-3">
+                <form method="POST" action="{{ route('cart.store') }}" class="space-y-3 js-add-to-cart-form">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
                     <div class="flex flex-col gap-3 sm:flex-row">
                         <div class="flex border border-base-300 w-full sm:w-32 bg-base-100">
                             <button type="button" onclick="let i=this.nextElementSibling;if(i.value>1)i.value--" class="px-4 py-3 text-base-content/60 hover:text-base-content text-lg leading-none transition-colors">−</button>
                             <input type="number" name="quantity" min="1" @if($inventoryEnabled) max="{{ $product->stock }}" @endif value="1"
+                                   oninput="const max=this.max?Number(this.max):null;if(max&&Number(this.value)>max){this.value=max;} if(Number(this.value)<1){this.value=1;}"
                                    class="w-full text-center bg-transparent text-sm border-x border-base-300 focus:outline-none">
                             <button type="button" onclick="let i=this.previousElementSibling;@if($inventoryEnabled) if(i.value<{{ $product->stock }}) @endif i.value++" class="px-4 py-3 text-base-content/60 hover:text-base-content text-lg leading-none transition-colors">+</button>
                         </div>
-                        <button type="submit" class="w-full sm:flex-1 bg-primary text-white px-6 py-3 uppercase tracking-widest text-[11px] font-semibold hover:bg-base-content hover:text-base-100 transition-colors">
-                            {{ __('Add to Cart') }}
+                        <button type="submit" class="js-add-to-cart-btn inline-flex w-full items-center justify-center gap-2 bg-primary px-6 py-3 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-base-content hover:text-base-100 sm:flex-1">
+                            <svg class="js-add-to-cart-spinner hidden h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.25" stroke-width="3"></circle>
+                                <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <span class="js-add-to-cart-label">{{ __('Add to Cart') }}</span>
                         </button>
                     </div>
+                    <div class="js-add-to-cart-error hidden rounded-md bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700"></div>
                 </form>
                 @else
                 <button disabled class="w-full border border-base-300 py-3 uppercase tracking-widest text-[11px] text-base-content/40 cursor-not-allowed">
@@ -209,3 +215,4 @@
 
 </div>
 @endsection
+

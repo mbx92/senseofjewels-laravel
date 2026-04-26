@@ -7,6 +7,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Services\DiscountService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,8 +23,10 @@ class CartController extends Controller
         return view('cart.index', compact('cart'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
+        $wantsJson = $request->expectsJson() || $request->ajax();
+
         $validated = $request->validate([
             'product_id' => ['required', 'exists:products,id'],
             'quantity' => ['nullable', 'integer', 'min:1'],
@@ -47,6 +50,12 @@ class CartController extends Controller
 
         $newQuantity = ($item->exists ? $item->quantity : 0) + $quantity;
         if ($this->inventoryEnabled() && $newQuantity > $product->stock) {
+            if ($wantsJson) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Stok tidak mencukupi untuk jumlah yang diminta.',
+                ], 422);
+            }
             return back()->with('error', 'Stok tidak mencukupi untuk jumlah yang diminta.');
         }
 
@@ -63,7 +72,18 @@ class CartController extends Controller
 
         $this->syncCartTotals($cart);
 
-        return back()->with('status', "{$product->name} added to cart.");
+        if ($wantsJson) {
+            return response()->json([
+                'ok' => true,
+                'message' => "{$product->name} added to cart.",
+                'added_text' => 'Added ✓',
+                'cart_count' => $cart->items()->count(),
+            ]);
+        }
+
+        return back()
+            ->with('status', "{$product->name} added to cart.")
+            ->with('cart_added', 'Added ✓');
     }
 
     public function update(Request $request, CartItem $cartItem): RedirectResponse
@@ -113,7 +133,13 @@ class CartController extends Controller
         $sessionId = $request->session()->getId();
 
         if ($request->user()) {
-            $sessionCart = Cart::query()->where('session_id', $sessionId)->first();
+            $sessionCart = Cart::query()
+                ->where('session_id', $sessionId)
+                ->where(function ($q) use ($request) {
+                    $q->whereNull('user_id')
+                        ->orWhere('user_id', $request->user()->id);
+                })
+                ->first();
 
             if ($sessionCart) {
                 if (! $sessionCart->user_id) {
@@ -136,7 +162,7 @@ class CartController extends Controller
         }
 
         return Cart::query()->firstOrCreate(
-            ['session_id' => $sessionId],
+            ['session_id' => $sessionId, 'user_id' => null],
             ['currency' => 'IDR'],
         );
     }

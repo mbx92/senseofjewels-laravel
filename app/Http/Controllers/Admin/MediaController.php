@@ -48,7 +48,7 @@ class MediaController extends Controller
             ->get()
             ->map(fn (Media $m) => [
                 'id'            => $m->id,
-                'url'           => $m->url,
+                'url'           => $this->relativeUrl($m->url),
                 'original_name' => $m->original_name,
                 'alt'           => $m->alt,
                 'human_size'    => $m->human_size,
@@ -117,5 +117,14 @@ class MediaController extends Controller
 
         return redirect()->route('admin.media.index')
             ->with('success', 'Media berhasil dihapus.');
+    }
+
+    private function relativeUrl(string $url): string
+    {
+        if (Str::startsWith($url, ['http://', 'https://'])) {
+            return parse_url($url, PHP_URL_PATH) ?: $url;
+        }
+
+        return $url;
     }
 }

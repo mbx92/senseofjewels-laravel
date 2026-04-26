@@ -9,10 +9,10 @@
     <a href="{{ route('admin.services.create') }}" class="btn btn-primary btn-sm">+ Tambah Service</a>
 </div>
 
-<div class="overflow-x-auto">
+<div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-sm">
     <table class="table table-zebra w-full">
         <thead>
-            <tr>
+            <tr class="bg-base-200/70">
                 <th>Icon</th>
                 <th>Judul</th>
                 <th>Summary</th>

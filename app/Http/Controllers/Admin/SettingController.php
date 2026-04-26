@@ -25,7 +25,7 @@ class SettingController extends Controller
         // Contact
         'contact_address', 'contact_phone', 'contact_email', 'contact_maps_embed', 'contact_whatsapp',
         // Social
-        'social_instagram', 'social_facebook', 'social_twitter', 'social_youtube', 'whatsapp_number',
+        'social_instagram', 'social_facebook', 'social_twitter', 'social_youtube', 'whatsapp_number', 'instagram_feed_enabled',
         // SEO
         'seo_title', 'seo_description',
         // Commerce
@@ -64,6 +64,7 @@ class SettingController extends Controller
             'social_twitter'         => ['nullable', 'url', 'max:255'],
             'social_youtube'         => ['nullable', 'url', 'max:255'],
             'whatsapp_number'        => ['nullable', 'string', 'max:30'],
+            'instagram_feed_enabled' => ['boolean'],
             'seo_title'              => ['nullable', 'string', 'max:255'],
             'seo_description'        => ['nullable', 'string', 'max:500'],
             'shop_currency_symbol'   => ['nullable', 'string', 'max:10'],
@@ -89,6 +90,7 @@ class SettingController extends Controller
             'contact_email' => 'contact', 'contact_maps_embed' => 'contact', 'contact_whatsapp' => 'contact',
             'social_instagram' => 'social', 'social_facebook' => 'social',
             'social_twitter' => 'social', 'social_youtube' => 'social', 'whatsapp_number' => 'social',
+            'instagram_feed_enabled' => 'social',
             'seo_title' => 'seo', 'seo_description' => 'seo',
             'shop_currency_symbol' => 'commerce', 'free_shipping_threshold' => 'commerce', 'tax_rate' => 'commerce',
             'inventory_enabled' => 'commerce',
@@ -98,11 +100,12 @@ class SettingController extends Controller
         ];
 
         foreach ($this->allSettingKeys as $key) {
+            $booleanKeys = ['maintenance_mode', 'inventory_enabled', 'instagram_feed_enabled'];
             Setting::query()->updateOrCreate(
                 ['key' => $key],
                 [
-                    'value' => $request->boolean('maintenance_mode') && $key === 'maintenance_mode'
-                        ? '1'
+                    'value' => in_array($key, $booleanKeys, true)
+                        ? ($request->boolean($key) ? '1' : '0')
                         : ($validated[$key] ?? ''),
                     'group' => $groups[$key] ?? 'general',
                     'type'  => 'text',

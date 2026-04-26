@@ -4,19 +4,25 @@
     'description' => 'Silakan aktifkan di halaman Settings > Commerce',
     'fullscreen' => false,
     'dashboardUrl' => null,
+    'showOverlay' => true,
 ])
 
 <div class="relative">
-    <div @class([$disabled ? 'pointer-events-none select-none' : ''])>
+    <div
+        @class([$disabled ? 'pointer-events-none select-none' : ''])
+        data-feature-locked="{{ $disabled ? '1' : '0' }}"
+    >
         {{ $slot }}
     </div>
 
     @if($disabled)
-        <div @class([
-            'z-[70] bg-black',
-            'fixed inset-0' => $fullscreen,
-            'absolute inset-0' => !$fullscreen,
-        ])></div>
+        @if($showOverlay)
+            <div @class([
+                'z-[70] bg-black/20',
+                'fixed inset-0' => $fullscreen,
+                'absolute inset-0' => !$fullscreen,
+            ])></div>
+        @endif
         <div @class([
             'z-[71] flex items-center justify-center',
             'fixed inset-0' => $fullscreen,
@@ -38,3 +44,17 @@
         </div>
     @endif
 </div>
+
+@once
+    @push('scripts')
+        <script>
+            document.querySelectorAll('[data-feature-locked="1"]').forEach((root) => {
+                root.querySelectorAll('button, select').forEach((element) => {
+                    element.disabled = true;
+                    element.setAttribute('aria-disabled', 'true');
+                    element.classList.add('opacity-60', 'cursor-not-allowed');
+                });
+            });
+        </script>
+    @endpush
+@endonce

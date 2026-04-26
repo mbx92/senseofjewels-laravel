@@ -97,15 +97,54 @@
             <div class="card bg-base-100 shadow-sm">
                 <div class="card-body gap-3">
                     <h2 class="card-title text-base">Tambah Gambar Baru</h2>
-                    <p class="text-sm text-base-content/60">Pilih dari media library. Gambar yang sudah ada di atas tidak akan terhapus.</p>
-                    @foreach (range(0, 3) as $i)
-                        @include('admin.components.media-picker', [
-                            'inputName'    => 'media_image_urls[]',
-                            'inputId'      => 'product_edit_img_' . $i,
-                            'currentValue' => '',
-                            'label'        => 'Gambar Baru ' . ($i + 1),
-                        ])
-                    @endforeach
+                    <p class="text-sm text-base-content/60">Pilih gambar dari media library. Gambar pertama dari daftar ini jadi utama jika produk belum punya gambar utama.</p>
+                    <div x-data="productGalleryPicker()" class="space-y-3">
+                        <input type="hidden" name="media_image_urls_json" x-ref="jsonInput" x-effect="$refs.jsonInput.value = JSON.stringify(selected)">
+
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="(url, index) in selected" :key="url">
+                                <div class="relative h-20 w-20 overflow-hidden rounded border border-base-300">
+                                    <img :src="url" class="h-full w-full object-cover" alt="">
+                                    <button type="button" @click="remove(index)"
+                                            class="absolute right-1 top-1 h-5 w-5 rounded-full bg-error text-xs leading-none text-white">&times;</button>
+                                    <div class="absolute bottom-0 left-0 right-0 bg-black/55 py-0.5 text-center text-[9px] text-white" x-text="index === 0 ? 'Utama Baru' : 'Galeri ' + index"></div>
+                                </div>
+                            </template>
+                            <template x-if="selected.length === 0">
+                                <div class="flex h-20 w-20 items-center justify-center rounded border border-dashed border-base-300 text-[9px] uppercase tracking-widest text-base-content/40">No Img</div>
+                            </template>
+                        </div>
+
+                        <button type="button" @click="open = true" class="btn btn-outline btn-sm">Pilih dari Media Library</button>
+
+                        <div x-show="open" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black/70">
+                            <div class="flex max-h-[90vh] w-full max-w-4xl flex-col bg-base-100 shadow-2xl">
+                                <div class="flex items-center justify-between border-b border-base-300 px-6 py-4">
+                                    <h3 class="display-font text-2xl">Media Library</h3>
+                                    <div class="flex items-center gap-3">
+                                        <input type="text" x-model.debounce.300ms="query" placeholder="Search..."
+                                               class="w-44 border-b border-base-content/20 bg-transparent py-1.5 text-xs focus:border-primary focus:outline-none">
+                                        <button type="button" @click="open = false" class="text-xl text-base-content/50 hover:text-base-content">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="flex-1 overflow-y-auto p-4">
+                                    <template x-if="loading">
+                                        <div class="py-12 text-center text-sm text-base-content/50">Loading...</div>
+                                    </template>
+                                    <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                                        <template x-for="item in mediaItems" :key="item.id">
+                                            <button type="button" @click="pick(item.url)"
+                                                    :class="selected.includes(item.url) ? 'ring-2 ring-primary ring-offset-1' : 'hover:opacity-80'"
+                                                    class="relative aspect-square overflow-hidden bg-base-200 transition-all">
+                                                <img x-show="item.is_image" :src="item.url" :alt="item.alt" class="h-full w-full object-cover">
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @error('media_image_urls_json')<span class="text-error text-sm mt-1">{{ $message }}</span>@enderror
                 </div>
             </div>
         </div>
@@ -179,6 +218,44 @@
 @push('scripts')
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+function productGalleryPicker(initial = []) {
+    return {
+        selected: Array.isArray(initial) ? initial : [],
+        open: false,
+        loading: false,
+        mediaItems: [],
+        query: '',
+        init() {
+            this.$watch('open', (val) => { if (val) this.load(); });
+            this.$watch('query', () => this.load());
+        },
+        async load() {
+            this.loading = true;
+            try {
+                const endpoint = `{{ route('admin.media.json', [], false) }}?q=${encodeURIComponent(this.query)}`;
+                const res = await fetch(endpoint, {
+                    credentials: 'same-origin',
+                    mode: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
+                this.mediaItems = await res.json();
+            } finally {
+                this.loading = false;
+            }
+        },
+        pick(url) {
+            if (this.selected.includes(url)) return;
+            this.selected.push(url);
+        },
+        remove(index) {
+            this.selected.splice(index, 1);
+        },
+    };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const textarea = document.getElementById('description');
     if (!textarea) return;
