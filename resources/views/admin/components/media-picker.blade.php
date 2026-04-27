@@ -55,7 +55,7 @@
                 <div class="flex items-center gap-3">
                     <input type="text" x-model.debounce.400ms="query" placeholder="Search..."
                            class="border-b border-base-content/20 bg-transparent py-1.5 text-xs w-40 focus:outline-none focus:border-primary">
-                    <button @click="open = false" class="text-base-content/40 hover:text-base-content text-xl leading-none">&times;</button>
+                    <button type="button" @click.prevent.stop="open = false" class="text-base-content/40 hover:text-base-content text-xl leading-none">&times;</button>
                 </div>
             </div>
 
@@ -90,7 +90,7 @@
                    class="text-[10px] uppercase tracking-widest text-primary hover:underline">
                     Manage Library ↗
                 </a>
-                <button @click="open = false"
+                <button type="button" @click.prevent.stop="open = false"
                         class="text-[11px] uppercase tracking-widest text-base-content/50 hover:text-base-content">
                     Close
                 </button>

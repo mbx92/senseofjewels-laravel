@@ -70,6 +70,8 @@ class HomeController extends Controller
             ->get();
 
         $settings = Setting::query()->pluck('value', 'key');
+        $instagramFeedEnabled = Setting::boolOf('instagram_feed_enabled', true);
+        $instagramUrl = $settings->get('social_instagram', 'https://instagram.com/senseofjewels');
 
         foreach ($newArrivals as $p) {
             $p->discounted_price = $this->discountService->applyProductDiscount($p);
@@ -95,7 +97,9 @@ class HomeController extends Controller
             'services',
             'portfolioItems',
             'settings',
-            'promos'
+            'promos',
+            'instagramFeedEnabled',
+            'instagramUrl'
         ));
     }
 }

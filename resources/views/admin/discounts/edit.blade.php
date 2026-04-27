@@ -12,10 +12,11 @@
     </div>
 </div>
 
-<div class="card bg-base-100 shadow-sm max-w-xl">
-    <div class="card-body gap-4">
-        <form method="POST" action="{{ route('admin.discounts.update', $discount) }}" class="space-y-4"
-              x-data="{ appliesTo: '{{ old('applies_to', $discount->applies_to) }}' }">
+<div class="grid gap-6 md:grid-cols-10">
+    <div class="card bg-base-100 shadow-sm md:col-span-6">
+        <div class="card-body gap-4">
+            <form method="POST" action="{{ route('admin.discounts.update', $discount) }}" class="space-y-4"
+                  x-data="{ appliesTo: '{{ old('applies_to', $discount->applies_to) }}' }">
             @csrf @method('PUT')
 
             <fieldset class="fieldset">
@@ -24,13 +25,13 @@
                 @error('name')<p class="fieldset-label text-error">{{ $message }}</p>@enderror
             </fieldset>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-                <fieldset class="fieldset">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                <fieldset class="fieldset lg:col-span-3">
                     <legend class="fieldset-legend">Kode</legend>
                     <input type="text" name="code" value="{{ old('code', $discount->code) }}" class="input w-full uppercase" />
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-3">
                     <legend class="fieldset-legend">Berlaku Untuk <span class="text-error">*</span></legend>
                     <select name="applies_to" class="select w-full" x-model="appliesTo" required>
                         <option value="all" @selected(old('applies_to', $discount->applies_to) === 'all')>Semua Produk</option>
@@ -70,8 +71,8 @@
                 </div>
             </fieldset>
 
-            <div class="grid gap-4 sm:grid-cols-2">
-                <fieldset class="fieldset">
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Tipe Diskon <span class="text-error">*</span></legend>
                     <select name="type" class="select w-full" required>
                         <option value="percent" @selected(old('type', $discount->type) === 'percent')>Persen (%)</option>
@@ -79,38 +80,34 @@
                     </select>
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Nilai Diskon <span class="text-error">*</span></legend>
                     <input type="number" name="value" value="{{ old('value', $discount->value) }}" step="0.01" min="0" class="input w-full" required />
                     <p class="fieldset-label text-base-content/50">Persen: isi 1–100 (tanpa simbol %). Nominal: isi jumlah Rupiah.</p>
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Min. Order (Rp)</legend>
                     <input type="number" name="minimum_order_amount" value="{{ old('minimum_order_amount', $discount->minimum_order_amount) }}" step="1" min="0" class="input w-full" />
                     <p class="fieldset-label text-base-content/50">Diskon aktif jika subtotal ≥ nilai ini.</p>
                 </fieldset>
 
-                <fieldset class="fieldset sm:col-span-2">
+                <fieldset class="fieldset sm:col-span-2 lg:col-span-6">
                     <legend class="fieldset-legend">Maks. Potongan (Rp)</legend>
                     <input type="number" name="maximum_discount_amount" value="{{ old('maximum_discount_amount', $discount->maximum_discount_amount) }}" step="1" min="0" class="input w-full" />
-                    <p class="fieldset-label text-base-content/50">
-                        Batas atas potongan harga. <strong>Contoh:</strong> Diskon 50%, maks Rp 50.000 → produk Rp 200.000 hanya dapat potongan Rp 50.000 (efektif 25%), bukan Rp 100.000.
-                        Badge "%" di halaman toko <strong>otomatis dihitung dari harga aktual</strong>, sehingga selalu akurat ke customer.
-                    </p>
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Batas Penggunaan</legend>
                     <input type="number" name="usage_limit" value="{{ old('usage_limit', $discount->usage_limit) }}" min="1" class="input w-full" />
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Mulai</legend>
                     <input type="date" name="starts_at" value="{{ old('starts_at', $discount->starts_at?->format('Y-m-d')) }}" class="input w-full" />
                 </fieldset>
 
-                <fieldset class="fieldset">
+                <fieldset class="fieldset lg:col-span-2">
                     <legend class="fieldset-legend">Berakhir</legend>
                     <input type="date" name="ends_at" value="{{ old('ends_at', $discount->ends_at?->format('Y-m-d')) }}" class="input w-full" />
                 </fieldset>
@@ -134,11 +131,27 @@
                 <label for="is_active" class="text-sm">Aktif</label>
             </div>
 
-            <div class="card-actions justify-end">
-                <a href="{{ route('admin.discounts.index') }}" class="btn btn-ghost">Batal</a>
-                <button type="submit" class="btn btn-primary">Perbarui</button>
+                <div class="card-actions justify-end">
+                    <a href="{{ route('admin.discounts.index') }}" class="btn btn-ghost">Batal</a>
+                    <button type="submit" class="btn btn-primary">Perbarui</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm h-fit md:col-span-4">
+        <div class="card-body">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-base-content/50">Contoh Pengisian</p>
+            <p class="mt-2 text-sm text-base-content/70">
+                Diskon 50% dengan maks potongan Rp 50.000 pada produk Rp 200.000 akan tetap hanya memotong Rp 50.000 (efektif 25%), bukan Rp 100.000.
+            </p>
+            <p class="mt-1 text-sm text-base-content/70">
+                Badge persen di halaman toko dihitung otomatis dari harga aktual setelah batas maksimum diterapkan.
+            </p>
+            <div class="mt-4 rounded-box border border-base-300 bg-base-200/60 p-3 text-xs text-base-content/65">
+                Perubahan nilai pada form kiri bisa langsung divalidasi dengan logika contoh di card ini.
             </div>
-        </form>
+        </div>
     </div>
 </div>
 </div>

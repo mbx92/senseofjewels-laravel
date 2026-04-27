@@ -308,6 +308,95 @@
          PROMO BANNERS — Active discounts with image
     ===================================================== --}}
     @if($promos->isNotEmpty())
+    @php
+        $promoModal = $promos->first();
+        $promoModalKey = 'soj_promo_seen_' . md5($promos->map(fn ($p) => $p->id . '|' . optional($p->updated_at)->timestamp)->implode(','));
+    @endphp
+
+    <div
+        x-data="{
+            open: false,
+            storageKey: @js($promoModalKey),
+            init() {
+                try {
+                    if (!window.localStorage.getItem(this.storageKey)) {
+                        this.open = true;
+                    }
+                } catch (e) {
+                    this.open = true;
+                }
+            },
+            close() {
+                this.open = false;
+                try { window.localStorage.setItem(this.storageKey, '1'); } catch (e) {}
+            }
+        }"
+        x-init="init()"
+    >
+        <template x-teleport="body">
+            <div
+                x-show="open"
+                x-cloak
+                @keydown.escape.window="close()"
+                class="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/70 p-4 isolation-isolate"
+                style="z-index:2147483647;"
+            >
+                <div @click.outside="close()" class="relative z-[2147483647] w-full max-w-2xl overflow-hidden border border-base-300 bg-base-100 shadow-2xl" style="z-index:2147483647;">
+                    <div class="grid md:grid-cols-2">
+                        <div class="relative min-h-64 bg-neutral">
+                            @if($promoModal->image_url)
+                                <img src="{{ $promoModal->image_url }}" alt="{{ $promoModal->code }}" class="absolute inset-0 h-full w-full object-cover">
+                                <div class="absolute inset-0 bg-black/35"></div>
+                            @else
+                                <div class="absolute inset-0 bg-gradient-to-br from-neutral via-neutral/85 to-base-300"></div>
+                            @endif
+                            <div class="relative z-10 flex h-full items-end p-6">
+                                <span class="bg-primary/90 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-primary-content">
+                                    {{ __('Special Offer') }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-center p-6 md:p-8">
+                            <p class="text-[10px] uppercase tracking-[0.25em] text-primary">{{ __('Promo Code') }}</p>
+                            <h3 class="mt-2 display-font text-4xl text-base-content">{{ $promoModal->code }}</h3>
+
+                            @if($promoModal->discount)
+                                <p class="mt-2 text-sm text-base-content/80">
+                                    {{ $promoModal->discount->type === 'percent'
+                                        ? __('Discount') . ' ' . number_format($promoModal->discount->value, 0) . '%'
+                                        : __('Save') . ' ' . app(\App\Services\CurrencyService::class)->format($promoModal->discount->value) }}
+                                </p>
+                            @endif
+
+                            @if($promoModal->description)
+                                <p class="mt-3 text-sm leading-relaxed text-base-content/65">{{ $promoModal->description }}</p>
+                            @endif
+
+                            <div class="mt-5 space-y-1 text-[11px] text-base-content/55">
+                                @if($promoModal->ends_at)
+                                    <p>{{ __('Valid until') }} {{ $promoModal->ends_at->format('d M Y') }}</p>
+                                @endif
+                                @if($promoModal->minimum_order_amount > 0)
+                                    <p>{{ __('Minimum order') }} @money($promoModal->minimum_order_amount)</p>
+                                @endif
+                            </div>
+
+                            <div class="mt-6 flex items-center gap-3">
+                                <a href="{{ route('shop.index') }}" @click="close()" class="inline-flex items-center border border-base-content/25 px-5 py-2.5 text-[11px] uppercase tracking-[0.18em] text-base-content hover:border-primary hover:text-primary transition-colors">
+                                    {{ __('Shop Now') }}
+                                </a>
+                                <button type="button" @click="close()" class="text-[11px] uppercase tracking-[0.18em] text-base-content/50 hover:text-base-content">
+                                    {{ __('Maybe Later') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
     <section class="py-10 md:py-14 bg-base-100 border-t border-base-200">
         <div class="container mx-auto px-6 lg:px-12 max-w-7xl">
 
@@ -698,14 +787,14 @@
     {{-- ====================================================
          INSTAGRAM GRID
     ===================================================== --}}
-    @if(($settings->get('instagram_feed_enabled', '1') === '1'))
+    @if($instagramFeedEnabled)
     <section class="py-20 bg-base-200 border-t border-base-300">
         <div class="text-center mb-12">
-            <a href="https://instagram.com/senseofjewels" target="_blank" class="display-font text-3xl text-base-content hover:text-primary transition-colors">@senseofjewels</a>
+            <a href="{{ $instagramUrl }}" target="_blank" rel="noopener noreferrer" class="display-font text-3xl text-base-content hover:text-primary transition-colors">@senseofjewels</a>
         </div>
         <div class="grid grid-cols-3 md:grid-cols-6 gap-0">
             @for($i = 1; $i <= 6; $i++)
-            <a href="https://instagram.com/senseofjewels" target="_blank"
+            <a href="{{ $instagramUrl }}" target="_blank" rel="noopener noreferrer"
                class="aspect-square bg-base-300 relative group flex items-center justify-center border-[0.5px] border-base-100">
                 <span class="text-base-content/25 tracking-widest text-[9px] uppercase">Post {{ $i }}</span>
                 <div class="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
