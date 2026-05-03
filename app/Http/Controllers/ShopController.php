@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Services\DiscountService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -48,7 +49,9 @@ class ShopController extends Controller
             $product->discounted_price = $this->discountService->applyProductDiscount($product);
         }
 
-        return view('shop.index', compact('categories', 'products'));
+        $cartEnabled = Setting::cartEnabled();
+
+        return view('shop.index', compact('categories', 'products', 'cartEnabled'));
     }
 
     public function show(string $slug): View
@@ -74,6 +77,8 @@ class ShopController extends Controller
             $related->discounted_price = $this->discountService->applyProductDiscount($related);
         }
 
-        return view('shop.show', compact('product', 'relatedProducts'));
+        $cartEnabled = Setting::cartEnabled();
+
+        return view('shop.show', compact('product', 'relatedProducts', 'cartEnabled'));
     }
 }

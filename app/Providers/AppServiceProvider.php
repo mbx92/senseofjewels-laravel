@@ -45,9 +45,11 @@ class AppServiceProvider extends ServiceProvider
         // Share cart item count to layout views
         View::composer('layouts.app', function ($view) {
             try {
+                $cartEnabled = Setting::cartEnabled();
+                $whatsappUrl = Setting::whatsappUrl();
                 $sessionId = request()->session()->getId();
                 $count = 0;
-                if ($sessionId && Schema::hasTable('carts')) {
+                if ($cartEnabled && $sessionId && Schema::hasTable('carts')) {
                     $cartQuery = Cart::query()->withCount('items');
                     if (Auth::check()) {
                         $cartQuery->where('user_id', Auth::id());
@@ -58,9 +60,15 @@ class AppServiceProvider extends ServiceProvider
                     $count = $cart?->items_count ?? 0;
                 }
             } catch (\Throwable) {
+                $cartEnabled = true;
+                $whatsappUrl = null;
                 $count = 0;
             }
-            $view->with('navCartCount', $count);
+            $view->with([
+                'cartEnabled' => $cartEnabled,
+                'navCartCount' => $count,
+                'whatsappUrl' => $whatsappUrl,
+            ]);
         });
     }
 }

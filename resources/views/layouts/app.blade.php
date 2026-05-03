@@ -49,10 +49,16 @@
                         <span class="display-font text-2xl text-base-content">{{ $siteName }}</span>
                     @endif
                 </a>
-                <a href="{{ route('cart.index') }}" wire:navigate class="relative inline-flex h-8 w-8 items-center justify-center p-2 text-base-content/70 hover:text-base-content">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    <span data-cart-count-badge class="absolute top-0 right-0 {{ !empty($navCartCount) && $navCartCount > 0 ? 'flex' : 'hidden' }} h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount > 0 ? $navCartCount : '' }}</span>
-                </a>
+                @if($cartEnabled ?? true)
+                    <a href="{{ route('cart.index') }}" wire:navigate class="relative inline-flex h-8 w-8 items-center justify-center p-2 text-base-content/70 hover:text-base-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        <span data-cart-count-badge class="absolute top-0 right-0 {{ !empty($navCartCount) && $navCartCount > 0 ? 'flex' : 'hidden' }} h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount > 0 ? $navCartCount : '' }}</span>
+                    </a>
+                @elseif(!empty($whatsappUrl))
+                    <a href="{{ $whatsappUrl }}" target="_blank" class="inline-flex h-8 w-8 items-center justify-center p-2 text-base-content/70 hover:text-base-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </a>
+                @endif
             </div>
 
             <!-- Mobile Dropdown -->
@@ -60,7 +66,11 @@
                 <ul class="space-y-1">
                     <li><a href="{{ url('/') }}" wire:navigate class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content hover:text-primary transition-colors">{{ __('Home') }}</a></li>
                     <li><a href="{{ route('shop.index') }}" wire:navigate class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Shop') }}</a></li>
+                    @if($cartEnabled ?? true)
                     <li><a href="{{ route('cart.index') }}" wire:navigate class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Cart') }}</a></li>
+                    @elseif(!empty($whatsappUrl))
+                    <li><a href="{{ $whatsappUrl }}" target="_blank" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Order WA') }}</a></li>
+                    @endif
                     <li><a href="{{ url('/#story') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Story') }}</a></li>
                     <li><a href="{{ url('/#contact') }}" class="block py-2.5 text-[11px] uppercase tracking-[0.2em] font-semibold text-base-content/70 hover:text-primary transition-colors">{{ __('Contact') }}</a></li>
                 </ul>
@@ -104,15 +114,19 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     </a>
                     @endauth
+                    @if($cartEnabled ?? true)
                     <!-- Cart Icon -->
                     <a href="{{ route('cart.index') }}" wire:navigate class="relative inline-flex h-8 w-8 items-center justify-center text-base-content/50 hover:text-base-content transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         <span data-cart-count-badge class="absolute top-0 right-0 {{ !empty($navCartCount) && $navCartCount > 0 ? 'flex' : 'hidden' }} h-4 min-w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold leading-none text-white shadow-sm">{{ $navCartCount > 0 ? $navCartCount : '' }}</span>
                     </a>
+                    @endif
                     <!-- WA CTA -->
-                    <a href="https://wa.me/6281200000000" target="_blank" class="text-[10px] uppercase tracking-[0.18em] font-bold bg-neutral text-neutral-content px-4 py-2.5 hover:bg-primary hover:text-primary-content transition-colors whitespace-nowrap">
+                    @if(!empty($whatsappUrl))
+                    <a href="{{ $whatsappUrl }}" target="_blank" class="text-[10px] uppercase tracking-[0.18em] font-bold bg-neutral text-neutral-content px-4 py-2.5 hover:bg-primary hover:text-primary-content transition-colors whitespace-nowrap">
                         {{ __('Order WA') }}
                     </a>
+                    @endif
                     <!-- Language & Currency switcher -->
                     <div class="flex items-center gap-1" x-data>
                         {{-- Language --}}
@@ -242,10 +256,12 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
                     {{ __('Instagram') }}
                 </a>
-                <a href="https://wa.me/6281200000000" target="_blank" class="link link-hover flex items-center gap-3 text-neutral-content/80">
+                @if(!empty($whatsappUrl))
+                <a href="{{ $whatsappUrl }}" target="_blank" class="link link-hover flex items-center gap-3 text-neutral-content/80">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     {{ __('WhatsApp') }}
                 </a>
+                @endif
                 <a href="mailto:hello@senseofjewels.id" class="link link-hover flex items-center gap-3 text-neutral-content/80">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     {{ __('Email') }}

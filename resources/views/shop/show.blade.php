@@ -57,6 +57,8 @@
             @php
                 $inventoryEnabled = \App\Models\Setting::boolOf('inventory_enabled', true);
                 $canPurchase = ! $inventoryEnabled || $product->stock > 0;
+                $waMessage = "Halo Sense of Jewels, saya ingin order {$product->name} (SKU: {$product->sku}). Link: " . route('shop.show', $product->slug);
+                $productWhatsappUrl = \App\Models\Setting::whatsappUrl($waMessage);
             @endphp
 
             {{-- Category + Name --}}
@@ -103,7 +105,7 @@
                     @endif
                 </div>
 
-                @if($canPurchase)
+                @if($canPurchase && $cartEnabled)
                 <form method="POST" action="{{ route('cart.store') }}" class="space-y-3 js-add-to-cart-form">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -125,6 +127,14 @@
                     </div>
                     <div class="js-add-to-cart-error hidden rounded-md bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700"></div>
                 </form>
+                @elseif($canPurchase && $productWhatsappUrl)
+                <a href="{{ $productWhatsappUrl }}" target="_blank" class="block w-full bg-primary text-center text-white px-6 py-3 uppercase tracking-widest text-[11px] font-semibold hover:bg-base-content hover:text-base-100 transition-colors">
+                    {{ __('Order via WhatsApp') }}
+                </a>
+                @elseif($canPurchase)
+                <button disabled class="w-full border border-base-300 py-3 uppercase tracking-widest text-[11px] text-base-content/40 cursor-not-allowed">
+                    {{ __('WhatsApp is not configured yet') }}
+                </button>
                 @else
                 <button disabled class="w-full border border-base-300 py-3 uppercase tracking-widest text-[11px] text-base-content/40 cursor-not-allowed">
                     {{ __('Out of Stock') }}

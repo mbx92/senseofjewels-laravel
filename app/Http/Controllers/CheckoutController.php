@@ -32,6 +32,11 @@ class CheckoutController extends Controller
 
     public function index(Request $request): View|RedirectResponse
     {
+        if (! Setting::cartEnabled()) {
+            return redirect()->route('shop.index')
+                ->with('error', 'Checkout sedang nonaktif. Silakan order produk via WhatsApp.');
+        }
+
         $cart = $this->cartService->getCart();
 
         if ($cart->items->isEmpty()) {
@@ -44,6 +49,10 @@ class CheckoutController extends Controller
 
     public function applyVoucher(Request $request): JsonResponse
     {
+        if (! Setting::cartEnabled()) {
+            return response()->json(['message' => 'Checkout sedang nonaktif.'], 403);
+        }
+
         $request->validate(['code' => ['required', 'string']]);
 
         $cart   = $this->cartService->getCart();
@@ -71,6 +80,11 @@ class CheckoutController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        if (! Setting::cartEnabled()) {
+            return redirect()->route('shop.index')
+                ->with('error', 'Checkout sedang nonaktif. Silakan order produk via WhatsApp.');
+        }
+
         $validated = $request->validate([
             'customer_name'                => ['required', 'string', 'max:255'],
             'customer_email'               => ['required', 'email', 'max:255'],

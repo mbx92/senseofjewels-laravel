@@ -170,6 +170,16 @@
                 </label>
                 <span class="text-[11px] text-base-content/40">Jika nonaktif, stok tidak membatasi pembelian dan tidak berkurang otomatis.</span>
             </div>
+            <div class="flex items-center gap-4 pt-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="hidden" name="cart_enabled" value="0">
+                    <input type="checkbox" name="cart_enabled" value="1"
+                           class="toggle toggle-sm toggle-primary"
+                           {{ ($settings['cart_enabled'] ?? '1') === '1' ? 'checked' : '' }}>
+                    <span class="text-sm text-base-content/70">Cart & Checkout Active</span>
+                </label>
+                <span class="text-[11px] text-base-content/40">Jika nonaktif, shop menjadi katalog dan tombol produk diarahkan ke WhatsApp.</span>
+            </div>
         </div>
 
         {{-- COLORS --}}

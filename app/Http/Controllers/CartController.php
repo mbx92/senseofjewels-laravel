@@ -18,6 +18,8 @@ class CartController extends Controller
 
     public function index(Request $request): View
     {
+        abort_unless($this->cartEnabled(), 404);
+
         $cart = $this->currentCart($request)->load('items.product.images');
 
         return view('cart.index', compact('cart'));
@@ -26,6 +28,17 @@ class CartController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $wantsJson = $request->expectsJson() || $request->ajax();
+
+        if (! $this->cartEnabled()) {
+            if ($wantsJson) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => 'Cart sedang nonaktif. Silakan order produk via WhatsApp.',
+                ], 403);
+            }
+
+            return back()->with('error', 'Cart sedang nonaktif. Silakan order produk via WhatsApp.');
+        }
 
         $validated = $request->validate([
             'product_id' => ['required', 'exists:products,id'],
@@ -88,6 +101,10 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $cartItem): RedirectResponse
     {
+        if (! $this->cartEnabled()) {
+            return redirect()->route('shop.index')->with('error', 'Cart sedang nonaktif. Silakan order produk via WhatsApp.');
+        }
+
         $validated = $request->validate([
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
@@ -117,6 +134,10 @@ class CartController extends Controller
 
     public function destroy(Request $request, CartItem $cartItem): RedirectResponse
     {
+        if (! $this->cartEnabled()) {
+            return redirect()->route('shop.index')->with('error', 'Cart sedang nonaktif. Silakan order produk via WhatsApp.');
+        }
+
         $cart = $this->currentCart($request);
 
         abort_unless($cartItem->cart_id === $cart->id, 404);
@@ -204,5 +225,10 @@ class CartController extends Controller
     private function inventoryEnabled(): bool
     {
         return Setting::boolOf('inventory_enabled', true);
+    }
+
+    private function cartEnabled(): bool
+    {
+        return Setting::cartEnabled();
     }
 }

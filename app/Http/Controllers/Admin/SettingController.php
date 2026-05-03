@@ -29,7 +29,7 @@ class SettingController extends Controller
         // SEO
         'seo_title', 'seo_description',
         // Commerce
-        'shop_currency_symbol', 'free_shipping_threshold', 'tax_rate', 'inventory_enabled',
+        'shop_currency_symbol', 'free_shipping_threshold', 'tax_rate', 'inventory_enabled', 'cart_enabled',
         // Theme Colors
         'theme_primary', 'theme_secondary', 'theme_accent', 'theme_neutral',
         'theme_base_100', 'theme_base_200', 'theme_base_300', 'theme_base_content',
@@ -71,6 +71,7 @@ class SettingController extends Controller
             'free_shipping_threshold'=> ['nullable', 'numeric', 'min:0'],
             'tax_rate'               => ['nullable', 'numeric', 'min:0', 'max:100'],
             'inventory_enabled'      => ['boolean'],
+            'cart_enabled'           => ['boolean'],
             // Theme colors — must be valid hex
             'theme_primary'          => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'theme_secondary'        => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
@@ -93,11 +94,12 @@ class SettingController extends Controller
             'instagram_feed_enabled' => 'social',
             'seo_title' => 'seo', 'seo_description' => 'seo',
             'shop_currency_symbol' => 'commerce', 'free_shipping_threshold' => 'commerce', 'tax_rate' => 'commerce',
-            'inventory_enabled' => 'commerce',
+            'inventory_enabled' => 'commerce', 'cart_enabled' => 'commerce',
             'theme_primary' => 'colors', 'theme_secondary' => 'colors', 'theme_accent' => 'colors',
             'theme_neutral' => 'colors', 'theme_base_100' => 'colors', 'theme_base_200' => 'colors',
             'theme_base_300' => 'colors', 'theme_base_content' => 'colors', 'theme_neutral_content' => 'colors',
         ];
+        $booleanKeys = ['maintenance_mode', 'inventory_enabled', 'cart_enabled'];
 
         foreach ($this->allSettingKeys as $key) {
             $booleanKeys = ['maintenance_mode', 'inventory_enabled', 'instagram_feed_enabled'];
@@ -108,7 +110,7 @@ class SettingController extends Controller
                         ? ($request->boolean($key) ? '1' : '0')
                         : ($validated[$key] ?? ''),
                     'group' => $groups[$key] ?? 'general',
-                    'type'  => 'text',
+                    'type'  => in_array($key, $booleanKeys, true) ? 'boolean' : 'text',
                 ],
             );
         }

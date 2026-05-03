@@ -131,10 +131,12 @@ class DatabaseSeeder extends Seeder
         foreach ([
             ['group' => 'contact', 'key' => 'contact_email', 'value' => 'hello@senseofjewels.test'],
             ['group' => 'contact', 'key' => 'contact_phone', 'value' => '+62 821 9999 9999'],
+            ['group' => 'contact', 'key' => 'contact_whatsapp', 'value' => '+62 812 0000 0000'],
+            ['group' => 'commerce', 'key' => 'cart_enabled', 'value' => '1', 'type' => 'boolean'],
         ] as $setting) {
             Setting::query()->updateOrCreate(
                 ['key' => $setting['key']],
-                ['group' => $setting['group'], 'value' => $setting['value'], 'type' => 'text'],
+                ['group' => $setting['group'], 'value' => $setting['value'], 'type' => $setting['type'] ?? 'text'],
             );
         }
 

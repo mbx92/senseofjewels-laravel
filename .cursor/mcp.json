@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "daisyui": {
+      "type": "stdio",
+      "command": "/Users/mbx/Projects/daisyui-mcp/venv/bin/python",
+      "args": ["/Users/mbx/Projects/daisyui-mcp/mcp_server.py"]
+    }
+  }
+}

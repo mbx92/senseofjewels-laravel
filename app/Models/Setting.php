@@ -29,4 +29,30 @@ class Setting extends Model
 
         return in_array(strtolower((string) $value), ['1', 'true', 'on', 'yes'], true);
     }
+
+    public static function cartEnabled(): bool
+    {
+        return static::boolOf('cart_enabled', true);
+    }
+
+    public static function whatsappNumber(): ?string
+    {
+        $number = static::valueOf('contact_whatsapp')
+            ?: static::valueOf('whatsapp_number');
+
+        $digits = preg_replace('/\D+/', '', (string) $number);
+
+        return $digits !== '' ? $digits : null;
+    }
+
+    public static function whatsappUrl(?string $message = null): ?string
+    {
+        $number = static::whatsappNumber();
+
+        if (! $number) {
+            return null;
+        }
+
+        return 'https://wa.me/' . $number . ($message ? '?text=' . rawurlencode($message) : '');
+    }
 }

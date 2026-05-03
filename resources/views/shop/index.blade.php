@@ -44,6 +44,10 @@
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-16">
             @foreach ($products as $product)
+                @php
+                    $waMessage = "Halo Sense of Jewels, saya ingin order {$product->name} (SKU: {$product->sku}). Link: " . route('shop.show', $product->slug);
+                    $productWhatsappUrl = \App\Models\Setting::whatsappUrl($waMessage);
+                @endphp
                 <div class="group flex flex-col relative text-center">
                     <!-- Image -->
                     <div class="aspect-[3/4] bg-base-200 w-full mb-6 block overflow-hidden relative border border-base-300 group-hover:border-primary/40 transition-colors">
@@ -63,9 +67,10 @@
                                 <span class="bg-base-100 px-3 py-1 text-[9px] uppercase tracking-widest">{{ __('Bestseller') }}</span>
                             </div>
                         @endif
-                        
+
                         <!-- Quick Actions -->
                         <div class="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-4 transition-all duration-500 z-20">
+                            @if($cartEnabled)
                             <form method="POST" action="{{ route('cart.store') }}" class="js-add-to-cart-form">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -78,6 +83,15 @@
                                 </button>
                                 <div class="js-add-to-cart-error mt-2 hidden rounded-md bg-red-50 px-2 py-1 text-[10px] font-semibold text-red-700"></div>
                             </form>
+                            @elseif($productWhatsappUrl)
+                            <a href="{{ $productWhatsappUrl }}" target="_blank" class="block w-full bg-base-100 text-base-content py-3 uppercase tracking-widest text-[10px] font-semibold hover:bg-neutral hover:text-white transition-colors">
+                                {{ __('Order via WhatsApp') }}
+                            </a>
+                            @else
+                            <span class="block w-full bg-base-100 text-base-content/40 py-3 uppercase tracking-widest text-[10px] font-semibold">
+                                {{ __('WhatsApp is not configured yet') }}
+                            </span>
+                            @endif
                         </div>
                     </div>
                     
