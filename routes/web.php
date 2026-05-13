@@ -27,9 +27,14 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
+use App\Models\Order;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+
+/** Inertia + Vue pilot (stack migration phase A) */
+Route::get('/_inertia/pilot', fn () => Inertia::render('Pilot'))->name('inertia.pilot');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 // Customer preference routes (no auth required — session-only)
@@ -67,10 +72,11 @@ Route::middleware('auth')->group(function () {
 
     // Account area
     Route::get('/account/tracking', function () {
-        $orders = \App\Models\Order::where('user_id', auth()->id())
+        $orders = Order::where('user_id', auth()->id())
             ->orderByDesc('created_at')
             ->take(20)
             ->get();
+
         return view('account.tracking', compact('orders'));
     })->name('account.tracking');
 

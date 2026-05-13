@@ -1,22 +1,22 @@
-function initScrollAnimationsAndMobileMenu() {
+export function initScrollAnimationsAndMobileMenu() {
     // 1. Intersection Observer for Scroll Animations
     const observerOptions = {
         root: null,
         rootMargin: '0px',
-        threshold: 0.15
+        threshold: 0.15,
     };
 
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                observer.unobserve(entry.target);
+                obs.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
     const fadeElements = document.querySelectorAll('.animate-in, .fade-up');
-    fadeElements.forEach(el => observer.observe(el));
+    fadeElements.forEach((el) => observer.observe(el));
 
     // 2. Mobile Menu Toggle
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -28,6 +28,3 @@ function initScrollAnimationsAndMobileMenu() {
         });
     }
 }
-
-document.addEventListener('DOMContentLoaded', initScrollAnimationsAndMobileMenu);
-document.addEventListener('livewire:navigated', initScrollAnimationsAndMobileMenu);
