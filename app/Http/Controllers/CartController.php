@@ -6,23 +6,31 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Services\CurrencyService;
 use App\Services\DiscountService;
+use App\Support\CartPresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CartController extends Controller
 {
     public function __construct(protected DiscountService $discountService) {}
 
-    public function index(Request $request): View
+    public function index(Request $request, CurrencyService $currency): Response
     {
         abort_unless($this->cartEnabled(), 404);
 
         $cart = $this->currentCart($request)->load('items.product.images');
 
-        return view('cart.index', compact('cart'));
+        $inventoryEnabled = $this->inventoryEnabled();
+
+        return Inertia::render(
+            'Cart/Index',
+            CartPresenter::index($cart, $currency, $inventoryEnabled)
+        );
     }
 
     public function store(Request $request): RedirectResponse|JsonResponse
@@ -69,6 +77,7 @@ class CartController extends Controller
                     'message' => 'Stok tidak mencukupi untuk jumlah yang diminta.',
                 ], 422);
             }
+
             return back()->with('error', 'Stok tidak mencukupi untuk jumlah yang diminta.');
         }
 

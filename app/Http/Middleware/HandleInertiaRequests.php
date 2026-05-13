@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'cart_added' => $request->session()->get('cart_added'),
                 'status' => $request->session()->get('status'),
+                'error' => $request->session()->get('error'),
             ],
             'themeColors' => AppLayoutShared::themeColors(),
             'layoutStrings' => AppLayoutShared::publicLayoutStrings(),
