@@ -46,6 +46,7 @@ class HandleInertiaRequests extends Middleware
             'currency' => session('currency', 'IDR'),
             'flash' => [
                 'cart_added' => $request->session()->get('cart_added'),
+                'status' => $request->session()->get('status'),
             ],
             'themeColors' => AppLayoutShared::themeColors(),
             'layoutStrings' => AppLayoutShared::publicLayoutStrings(),
@@ -56,6 +57,7 @@ class HandleInertiaRequests extends Middleware
                 'EUR' => 'EUR – €',
                 'AUD' => 'AUD – A$',
             ],
+            'old' => $request->session()->getOldInput(),
             ...AppLayoutShared::navigation($request),
         ];
     }
