@@ -5,15 +5,18 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Services\CurrencyService;
 use App\Services\DiscountService;
+use App\Support\ShopPresenter;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ShopController extends Controller
 {
     public function __construct(protected DiscountService $discountService) {}
 
-    public function index(Request $request): View
+    public function index(Request $request, CurrencyService $currency): Response
     {
         $categories = Category::query()
             ->where('is_active', true)
@@ -44,17 +47,22 @@ class ShopController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        // Attach discounted price to each product
         foreach ($products as $product) {
             $product->discounted_price = $this->discountService->applyProductDiscount($product);
         }
 
         $cartEnabled = Setting::cartEnabled();
 
-        return view('shop.index', compact('categories', 'products', 'cartEnabled'));
+        $search = $request->filled('search') ? $request->string('search')->trim()->toString() : null;
+        $category = $request->filled('category') ? $request->string('category')->toString() : null;
+
+        return Inertia::render(
+            'Shop/Index',
+            ShopPresenter::index($products, $categories, $cartEnabled, $search, $category, $currency)
+        );
     }
 
-    public function show(string $slug): View
+    public function show(string $slug, CurrencyService $currency): Response
     {
         $product = Product::query()
             ->with(['category', 'images'])
@@ -79,6 +87,9 @@ class ShopController extends Controller
 
         $cartEnabled = Setting::cartEnabled();
 
-        return view('shop.show', compact('product', 'relatedProducts', 'cartEnabled'));
+        return Inertia::render(
+            'Shop/Show',
+            ShopPresenter::show($product, $relatedProducts, $cartEnabled, $currency)
+        );
     }
 }

@@ -13,7 +13,7 @@ import { route } from 'ziggy-js';
                 <div class="card-body gap-4">
                     <h1 class="display-font text-3xl text-base-content">Inertia + Vue</h1>
                     <p class="text-sm text-base-content/60">
-                        Halaman percobaan stack. Beranda sekarang Inertia + Vue; toko dan admin lainnya masih Blade.
+                        Halaman percobaan stack. Beranda & toko (shop) sudah Inertia + Vue; cart, checkout, dan admin masih Blade.
                     </p>
                     <div class="flex flex-wrap gap-2">
                         <Link :href="route('home')" class="btn btn-primary">Ke beranda (Blade)</Link>
