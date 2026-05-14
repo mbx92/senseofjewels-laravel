@@ -14,16 +14,17 @@ class PortfolioItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'        => ['required', 'string', 'max:255'],
-            'category'     => ['nullable', 'string', 'max:100'],
-            'client_name'  => ['nullable', 'string', 'max:150'],
-            'project_url'  => ['nullable', 'url', 'max:255'],
-            'description'  => ['nullable', 'string'],
-            'image'        => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'title' => ['required', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'client_name' => ['nullable', 'string', 'max:150'],
+            'project_url' => ['nullable', 'url', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:2048'],
             'completed_at' => ['nullable', 'date'],
-            'sort_order'   => ['nullable', 'integer', 'min:0'],
-            'is_featured'  => ['boolean'],
-            'is_active'    => ['boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'is_featured' => ['boolean'],
+            'is_active' => ['boolean'],
         ];
     }
 }

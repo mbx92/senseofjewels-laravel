@@ -8,32 +8,50 @@ use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CategoryController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $categories = Category::query()
-            ->with('parent')
+            ->with('parent:id,name')
+            ->withCount('products')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(fn (Category $c) => [
+                'id' => $c->id,
+                'name' => $c->name,
+                'parent_name' => $c->parent?->name,
+                'products_count' => $c->products_count,
+                'sort_order' => (int) $c->sort_order,
+                'is_active' => (bool) $c->is_active,
+            ]);
 
-        return view('admin.categories.index', compact('categories'));
+        return Inertia::render('Admin/Categories/Index', [
+            'categories' => $categories->values()->all(),
+        ]);
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        $parents = Category::query()->whereNull('parent_id')->where('is_active', true)->orderBy('name')->get();
+        $parents = Category::query()
+            ->whereNull('parent_id')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        return view('admin.categories.create', compact('parents'));
+        return Inertia::render('Admin/Categories/Create', [
+            'parents' => $parents,
+        ]);
     }
 
     public function store(CategoryRequest $request): RedirectResponse
     {
-        $data             = $request->safe()->except('image');
-        $data['slug']     = Str::slug($request->name);
+        $data = $request->safe()->except('image');
+        $data['slug'] = Str::slug($request->name);
         $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('image')) {
@@ -49,21 +67,32 @@ class CategoryController extends Controller
             ->with('success', 'Kategori berhasil ditambahkan.');
     }
 
-    public function edit(Category $category): View
+    public function edit(Category $category): Response
     {
         $parents = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
             ->where('id', '!=', $category->id)
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name']);
 
-        return view('admin.categories.edit', compact('category', 'parents'));
+        return Inertia::render('Admin/Categories/Edit', [
+            'parents' => $parents,
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'parent_id' => $category->parent_id,
+                'description' => $category->description,
+                'image_url' => $category->image_path ? Storage::url($category->image_path) : '',
+                'sort_order' => (int) $category->sort_order,
+                'is_active' => (bool) $category->is_active,
+            ],
+        ]);
     }
 
     public function update(CategoryRequest $request, Category $category): RedirectResponse
     {
-        $data             = $request->safe()->except('image');
+        $data = $request->safe()->except('image');
         $data['is_active'] = $request->boolean('is_active');
 
         if ($request->hasFile('image')) {

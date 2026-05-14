@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Setting;
 use App\Services\OrderService;
+use App\Support\AdminOrderSerialize;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderController extends Controller
 {
@@ -17,7 +19,7 @@ class OrderController extends Controller
         protected OrderService $orderService,
     ) {}
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $orders = Order::query()
             ->with('user')
@@ -26,21 +28,40 @@ class OrderController extends Controller
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search')->toString();
                 $q->where('order_number', 'like', "%{$search}%")
-                  ->orWhere('customer_name', 'like', "%{$search}%")
-                  ->orWhere('customer_email', 'like', "%{$search}%");
+                    ->orWhere('customer_name', 'like', "%{$search}%")
+                    ->orWhere('customer_email', 'like', "%{$search}%");
             })
             ->latest('placed_at')
             ->paginate(20)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Order $o) => [
+                'id' => $o->id,
+                'order_number' => $o->order_number,
+                'customer_name' => $o->customer_name,
+                'status' => $o->status,
+                'payment_status' => $o->payment_status,
+                'total' => (float) $o->total,
+                'currency' => $o->currency,
+                'placed_at' => $o->placed_at?->format('Y-m-d H:i'),
+            ]);
 
-        return view('admin.orders.index', compact('orders'));
+        return Inertia::render('Admin/Orders/Index', [
+            'orders' => $orders,
+            'filters' => [
+                'status' => $request->string('status')->toString() ?: null,
+                'payment_status' => $request->string('payment_status')->toString() ?: null,
+                'search' => $request->string('search')->toString() ?: null,
+            ],
+        ]);
     }
 
-    public function show(Order $order): View
+    public function show(Order $order): Response
     {
-        $order->load(['items.product', 'user', 'payment', 'voucher']);
+        $order->load(['items.product.images', 'user', 'payment', 'voucher']);
 
-        return view('admin.orders.show', compact('order'));
+        return Inertia::render('Admin/Orders/Show', [
+            'order' => AdminOrderSerialize::forShow($order),
+        ]);
     }
 
     public function updateStatus(Request $request, Order $order): RedirectResponse
@@ -48,9 +69,9 @@ class OrderController extends Controller
         $oldPaymentStatus = $order->payment_status;
 
         $request->validate([
-            'status'          => ['required', 'in:pending,processing,shipped,delivered,completed,cancelled'],
+            'status' => ['required', 'in:pending,processing,shipped,delivered,completed,cancelled'],
             'tracking_number' => ['nullable', 'string', 'max:100'],
-            'payment_status'  => ['nullable', 'in:pending,paid,failed,refunded'],
+            'payment_status' => ['nullable', 'in:pending,paid,failed,refunded'],
         ]);
 
         $update = [
@@ -72,7 +93,7 @@ class OrderController extends Controller
         }
 
         if ($request->filled('tracking_number')) {
-            $shipping             = $order->shipping_address ?? [];
+            $shipping = $order->shipping_address ?? [];
             $shipping['tracking'] = $request->tracking_number;
             $update['shipping_address'] = $shipping;
         }
@@ -81,7 +102,7 @@ class OrderController extends Controller
 
         if ($request->filled('payment_status') && $order->payment) {
             $order->payment->update([
-                'status'  => $request->payment_status,
+                'status' => $request->payment_status,
                 'paid_at' => $request->payment_status === 'paid'
                     ? ($order->payment->paid_at ?? Carbon::now())
                     : null,

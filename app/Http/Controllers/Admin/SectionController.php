@@ -8,9 +8,12 @@ use App\Http\Requests\Admin\HeroSectionRequest;
 use App\Http\Requests\Admin\StorySectionRequest;
 use App\Models\Page;
 use App\Models\Section;
+use App\Support\AdminMediaPath;
+use App\Support\HeroSlidesState;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SectionController extends Controller
 {
@@ -24,15 +27,46 @@ class SectionController extends Controller
 
     // ── Hero ──────────────────────────────────────────────────────────────
 
-    public function hero(): View
+    public function hero(): Response
     {
-        $page    = $this->getHomePage();
+        $page = $this->getHomePage();
         $section = Section::query()
             ->where('page_id', $page->id)
             ->where('key', 'hero')
             ->first();
 
-        return view('admin.sections.hero', compact('section'));
+        $s = $section?->settings ?? [];
+        $sv = fn (string $key, string $default = '') => $s[$key] ?? $default;
+
+        return Inertia::render('Admin/Sections/Hero', [
+            'textPositions' => HeroSlidesState::textPositions(),
+            'initial' => [
+                'is_active' => (bool) ($section?->is_active ?? true),
+                'title' => (string) ($section?->title ?? ''),
+                'subtitle' => (string) ($section?->subtitle ?? ''),
+                'description' => (string) ($section?->content ?? ''),
+                'cta_text' => (string) ($section?->cta_text ?? ''),
+                'cta_url' => (string) ($section?->cta_url ?? ''),
+                'text_position' => $sv('text_position', 'top-left'),
+                'season_badge' => $sv('season_badge'),
+                'eyebrow' => $sv('eyebrow'),
+                'banner1_label' => $sv('banner1_label'),
+                'banner1_title' => $sv('banner1_title'),
+                'banner1_subtitle' => $sv('banner1_subtitle'),
+                'banner1_cta_text' => $sv('banner1_cta_text'),
+                'banner1_cta_url' => $sv('banner1_cta_url'),
+                'banner1_image' => $sv('banner1_image'),
+                'banner1_text_position' => $sv('banner1_text_position', 'bottom-left'),
+                'banner2_label' => $sv('banner2_label'),
+                'banner2_title' => $sv('banner2_title'),
+                'banner2_subtitle' => $sv('banner2_subtitle'),
+                'banner2_cta_text' => $sv('banner2_cta_text'),
+                'banner2_cta_url' => $sv('banner2_cta_url'),
+                'banner2_image' => $sv('banner2_image'),
+                'banner2_text_position' => $sv('banner2_text_position', 'bottom-left'),
+                'heroSlides' => HeroSlidesState::slides($section),
+            ],
+        ]);
     }
 
     public function updateHero(HeroSectionRequest $request): RedirectResponse
@@ -74,32 +108,32 @@ class SectionController extends Controller
         $primarySlide = $heroSlides[0] ?? null;
 
         $data = [
-            'type'      => 'hero',
-            'title'     => $primarySlide['title'] ?? $request->title,
-            'subtitle'  => $primarySlide['subtitle'] ?? $request->subtitle,
-            'content'   => $primarySlide['description'] ?? $request->description,
-            'cta_text'  => $primarySlide['cta_text'] ?? $request->cta_text,
-            'cta_url'   => $primarySlide['cta_url'] ?? $request->cta_url,
+            'type' => 'hero',
+            'title' => $primarySlide['title'] ?? $request->title,
+            'subtitle' => $primarySlide['subtitle'] ?? $request->subtitle,
+            'content' => $primarySlide['description'] ?? $request->description,
+            'cta_text' => $primarySlide['cta_text'] ?? $request->cta_text,
+            'cta_url' => $primarySlide['cta_url'] ?? $request->cta_url,
             'is_active' => $request->boolean('is_active'),
-            'settings'  => [
-                'season_badge'     => $request->season_badge,
-                'eyebrow'          => $request->eyebrow,
-                'banner1_label'    => $request->banner1_label,
-                'banner1_title'    => $request->banner1_title,
+            'settings' => [
+                'season_badge' => $request->season_badge,
+                'eyebrow' => $request->eyebrow,
+                'banner1_label' => $request->banner1_label,
+                'banner1_title' => $request->banner1_title,
                 'banner1_subtitle' => $request->banner1_subtitle,
                 'banner1_cta_text' => $request->banner1_cta_text,
-                'banner1_cta_url'  => $request->banner1_cta_url,
-                'banner1_image'    => $request->banner1_image,
-                'banner2_label'    => $request->banner2_label,
-                'banner2_title'    => $request->banner2_title,
+                'banner1_cta_url' => $request->banner1_cta_url,
+                'banner1_image' => $request->banner1_image,
+                'banner2_label' => $request->banner2_label,
+                'banner2_title' => $request->banner2_title,
                 'banner2_subtitle' => $request->banner2_subtitle,
                 'banner2_cta_text' => $request->banner2_cta_text,
-                'banner2_cta_url'  => $request->banner2_cta_url,
-                'banner2_image'    => $request->banner2_image,
-                'text_position'         => $primarySlide['text_position'] ?? $request->text_position,
+                'banner2_cta_url' => $request->banner2_cta_url,
+                'banner2_image' => $request->banner2_image,
+                'text_position' => $primarySlide['text_position'] ?? $request->text_position,
                 'banner1_text_position' => $request->banner1_text_position,
                 'banner2_text_position' => $request->banner2_text_position,
-                'hero_slides'           => $heroSlides,
+                'hero_slides' => $heroSlides,
             ],
         ];
 
@@ -119,7 +153,7 @@ class SectionController extends Controller
         $data['settings']['hero_images'] = $heroImages;
 
         // First image → image_path for backward compat
-        if (!empty($heroImages)) {
+        if (! empty($heroImages)) {
             $data['image_path'] = $heroImages[0];
         }
 
@@ -133,15 +167,22 @@ class SectionController extends Controller
 
     // ── About ─────────────────────────────────────────────────────────────
 
-    public function about(): View
+    public function about(): Response
     {
-        $page    = $this->getHomePage();
+        $page = $this->getHomePage();
         $section = Section::query()
             ->where('page_id', $page->id)
             ->where('key', 'about')
             ->first();
 
-        return view('admin.sections.about', compact('section'));
+        return Inertia::render('Admin/Sections/About', [
+            'section' => [
+                'title' => $section?->title ?? '',
+                'content' => $section?->content ?? '',
+                'image_url' => $section?->image_path ? (str_starts_with((string) $section->image_path, 'http') ? $section->image_path : Storage::url($section->image_path)) : '',
+                'is_active' => (bool) ($section?->is_active ?? true),
+            ],
+        ]);
     }
 
     public function updateAbout(AboutSectionRequest $request): RedirectResponse
@@ -149,9 +190,9 @@ class SectionController extends Controller
         $page = $this->getHomePage();
 
         $data = [
-            'type'      => 'about',
-            'title'     => $request->title,
-            'content'   => $request->content,
+            'type' => 'about',
+            'title' => $request->title,
+            'content' => $request->content,
             'is_active' => $request->boolean('is_active'),
         ];
 
@@ -161,12 +202,14 @@ class SectionController extends Controller
                 ->where('key', 'about')
                 ->first();
 
-            if ($section?->image_path) {
+            if ($section?->image_path && ! str_starts_with((string) $section->image_path, 'http')) {
                 Storage::disk('public')->delete($section->image_path);
             }
 
             $data['image_path'] = $request->file('image')
                 ->store('images/sections', 'public');
+        } elseif ($request->filled('image_url')) {
+            $data['image_path'] = AdminMediaPath::fromPublicUrl($request->string('image_url')->toString());
         }
 
         Section::query()->updateOrCreate(
@@ -179,15 +222,32 @@ class SectionController extends Controller
 
     // ── Story ─────────────────────────────────────────────────────────────
 
-    public function story(): View
+    public function story(): Response
     {
-        $page    = $this->getHomePage();
+        $page = $this->getHomePage();
         $section = Section::query()
             ->where('page_id', $page->id)
             ->where('key', 'story')
             ->first();
+        $settings = $section?->settings ?? [];
 
-        return view('admin.sections.story', compact('section'));
+        return Inertia::render('Admin/Sections/Story', [
+            'section' => [
+                'eyebrow' => $settings['eyebrow'] ?? '',
+                'title' => $section?->title ?? '',
+                'subtitle' => $section?->subtitle ?? '',
+                'content' => $section?->content ?? '',
+                'cta_text' => $section?->cta_text ?? '',
+                'cta_url' => $section?->cta_url ?? '',
+                'image_path' => $section?->image_path
+                    ? ((str_starts_with((string) $section->image_path, 'http') || str_starts_with((string) $section->image_path, '/'))
+                        ? $section->image_path
+                        : Storage::url($section->image_path))
+                    : '',
+                'secondary_image' => $settings['secondary_image'] ?? '',
+                'is_active' => (bool) ($section?->is_active ?? true),
+            ],
+        ]);
     }
 
     public function updateStory(StorySectionRequest $request): RedirectResponse
@@ -195,16 +255,16 @@ class SectionController extends Controller
         $page = $this->getHomePage();
 
         $data = [
-            'type'      => 'story',
-            'title'     => $request->title,
-            'subtitle'  => $request->subtitle,
-            'content'   => $request->content,
-            'cta_text'  => $request->cta_text,
-            'cta_url'   => $request->cta_url,
+            'type' => 'story',
+            'title' => $request->title,
+            'subtitle' => $request->subtitle,
+            'content' => $request->content,
+            'cta_text' => $request->cta_text,
+            'cta_url' => $request->cta_url,
             'is_active' => $request->boolean('is_active'),
             'image_path' => $request->image_path ?: null,
-            'settings'  => [
-                'eyebrow'         => $request->eyebrow,
+            'settings' => [
+                'eyebrow' => $request->eyebrow,
                 'secondary_image' => $request->secondary_image ?: null,
             ],
         ];

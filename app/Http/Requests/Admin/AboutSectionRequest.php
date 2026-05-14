@@ -14,9 +14,10 @@ class AboutSectionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'    => ['required', 'string', 'max:255'],
-            'content'  => ['nullable', 'string'],
-            'image'    => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:2048'],
             'is_active' => ['boolean'],
         ];
     }

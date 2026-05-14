@@ -5,34 +5,45 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $roles = Role::query()
             ->withCount('users')
             ->with('permissions')
             ->orderBy('name')
-            ->get();
+            ->get()
+            ->map(fn (Role $r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'users_count' => $r->users_count,
+                'permission_names' => $r->permissions->pluck('name')->values()->all(),
+                'is_system' => in_array($r->name, ['super-admin', 'admin', 'customer'], true),
+            ]);
 
-        $allPermissions = Permission::query()->orderBy('name')->get();
+        $allPermissions = Permission::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.roles.index', compact('roles', 'allPermissions'));
+        return Inertia::render('Admin/Roles/Index', [
+            'roles' => $roles->values()->all(),
+            'allPermissions' => $allPermissions,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => ['required', 'string', 'max:80', 'unique:roles,name'],
+            'name' => ['required', 'string', 'max:80', 'unique:roles,name'],
             'permissions' => ['nullable', 'array'],
         ]);
 
         $role = Role::create([
-            'name'       => $validated['name'],
+            'name' => $validated['name'],
             'guard_name' => 'web',
         ]);
 

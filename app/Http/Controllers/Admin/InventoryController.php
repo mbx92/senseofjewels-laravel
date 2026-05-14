@@ -8,21 +8,38 @@ use App\Models\InventoryLog;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class InventoryController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $logs = InventoryLog::query()
             ->with(['product', 'user'])
             ->latest()
-            ->paginate(30);
+            ->paginate(30)
+            ->through(function (InventoryLog $log) {
+                return [
+                    'id' => $log->id,
+                    'product_name' => $log->product?->name,
+                    'user_name' => $log->user?->name,
+                    'type' => $log->type,
+                    'quantity' => $log->quantity,
+                    'stock_before' => $log->stock_before,
+                    'stock_after' => $log->stock_after,
+                    'note' => $log->note,
+                    'created_at' => $log->created_at?->format('Y-m-d H:i'),
+                ];
+            });
 
-        $products = Product::query()->where('is_active', true)->orderBy('name')->get();
-        $inventoryEnabled = Setting::boolOf('inventory_enabled', true);
+        $products = Product::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'sku', 'stock']);
 
-        return view('admin.inventory.index', compact('logs', 'products', 'inventoryEnabled'));
+        return Inertia::render('Admin/Inventory/Index', [
+            'logs' => $logs,
+            'products' => $products,
+            'inventoryEnabled' => Setting::boolOf('inventory_enabled', true),
+        ]);
     }
 
     public function adjust(InventoryAdjustmentRequest $request): RedirectResponse
@@ -33,13 +50,13 @@ class InventoryController extends Controller
         }
 
         $product = Product::findOrFail($request->product_id);
-        $before  = $product->stock;
+        $before = $product->stock;
 
         $change = match ($request->type) {
-            'in'         => $request->quantity,
-            'out'        => -$request->quantity,
-            'adjustment' => $request->quantity - $before, // set to exact value
-            default      => 0,
+            'in' => $request->quantity,
+            'out' => -$request->quantity,
+            'adjustment' => $request->quantity - $before,
+            default => 0,
         };
 
         $after = max(0, $before + $change);
@@ -47,13 +64,13 @@ class InventoryController extends Controller
         $product->update(['stock' => $after]);
 
         InventoryLog::query()->create([
-            'product_id'   => $product->id,
-            'user_id'      => auth()->id(),
-            'type'         => $request->type,
-            'quantity'     => abs($change),
+            'product_id' => $product->id,
+            'user_id' => auth()->id(),
+            'type' => $request->type,
+            'quantity' => abs($change),
             'stock_before' => $before,
-            'stock_after'  => $after,
-            'note'         => $request->note,
+            'stock_after' => $after,
+            'note' => $request->note,
         ]);
 
         return redirect()->route('admin.inventory.index')

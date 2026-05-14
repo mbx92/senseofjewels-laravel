@@ -17,7 +17,8 @@ defineProps({
 const steps = [
     { done: true, label: 'Foundation routes & layouts' },
     { done: true, label: 'Database models & migrations' },
-    { done: false, label: 'CMS CRUD screens' },
+    { done: true, label: 'CMS CRUD: categories (admin)' },
+    { done: true, label: 'Admin panel: Inertia + Vue (shop, CMS, system)' },
     { done: false, label: 'Midtrans Snap checkout' },
 ];
 </script>

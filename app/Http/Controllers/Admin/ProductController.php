@@ -10,33 +10,58 @@ use App\Models\ProductImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $products = Product::query()
             ->with(['category', 'images' => fn ($q) => $q->where('is_primary', true)])
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate(20)
+            ->through(function (Product $product) {
+                $primary = $product->images->first();
 
-        return view('admin.products.index', compact('products'));
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'price' => (float) $product->price,
+                    'price_formatted' => 'Rp '.number_format((int) $product->price, 0, ',', '.'),
+                    'stock' => (int) $product->stock,
+                    'min_stock_alert' => (int) $product->min_stock_alert,
+                    'is_featured' => (bool) $product->is_featured,
+                    'is_active' => (bool) $product->is_active,
+                    'category_name' => $product->category?->name,
+                    'primary_image_url' => $primary ? Storage::url($primary->path) : null,
+                ];
+            });
+
+        return Inertia::render('Admin/Products/Index', [
+            'products' => $products,
+        ]);
     }
 
-    public function create(): View
+    public function create(): Response
     {
-        $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        return view('admin.products.create', compact('categories'));
+        return Inertia::render('Admin/Products/Create', [
+            'categories' => $categories,
+        ]);
     }
 
     public function store(ProductRequest $request): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
-        $data['slug']       = Str::slug($request->name) . '-' . Str::random(4);
+        $data = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
+        $data['slug'] = Str::slug($request->name).'-'.Str::random(4);
         $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_active']  = $request->boolean('is_active', true);
+        $data['is_active'] = $request->boolean('is_active', true);
         $data['published_at'] = $data['is_active'] ? now() : null;
         $data['specifications'] = $this->parseSpecifications($request->input('specifications_text'));
 
@@ -47,8 +72,8 @@ class ProductController extends Controller
                 $path = $file->store('images/products', 'public');
                 ProductImage::query()->create([
                     'product_id' => $product->id,
-                    'path'       => $path,
-                    'alt_text'   => $product->name,
+                    'path' => $path,
+                    'alt_text' => $product->name,
                     'is_primary' => $index === 0,
                     'sort_order' => $index,
                 ]);
@@ -62,8 +87,8 @@ class ProductController extends Controller
                 $path = $this->mediaUrlToPath($url);
                 ProductImage::query()->create([
                     'product_id' => $product->id,
-                    'path'       => $path,
-                    'alt_text'   => $product->name,
+                    'path' => $path,
+                    'alt_text' => $product->name,
                     'is_primary' => ($fileCount === 0 && $index === 0),
                     'sort_order' => $fileCount + $index,
                 ]);
@@ -74,19 +99,50 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil ditambahkan.');
     }
 
-    public function edit(Product $product): View
+    public function edit(Product $product): Response
     {
-        $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
-        $product->load('images');
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
-        return view('admin.products.edit', compact('product', 'categories'));
+        $product->load(['images' => fn ($q) => $q->orderBy('sort_order')]);
+
+        return Inertia::render('Admin/Products/Edit', [
+            'categories' => $categories,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'category_id' => $product->category_id,
+                'short_description' => $product->short_description,
+                'description' => $product->description,
+                'specifications_text' => collect($product->specifications ?? [])
+                    ->map(fn ($value, $label) => "{$label}: {$value}")
+                    ->implode("\n"),
+                'price' => $product->price,
+                'cost_price' => $product->cost_price,
+                'stock' => $product->stock,
+                'min_stock_alert' => $product->min_stock_alert,
+                'weight' => $product->weight,
+                'is_active' => $product->is_active,
+                'is_featured' => $product->is_featured,
+                'images' => $product->images->map(fn ($img) => [
+                    'id' => $img->id,
+                    'product_id' => $product->id,
+                    'url' => Storage::url($img->path),
+                    'is_primary' => $img->is_primary,
+                    'alt_text' => $img->alt_text,
+                ])->values()->all(),
+            ],
+        ]);
     }
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
     {
-        $data               = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
+        $data = $request->safe()->except(['images', 'media_image_urls', 'media_image_urls_json', 'specifications_text']);
         $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_active']  = $request->boolean('is_active');
+        $data['is_active'] = $request->boolean('is_active');
         $data['specifications'] = $this->parseSpecifications($request->input('specifications_text'));
 
         $product->update($data);
@@ -97,8 +153,8 @@ class ProductController extends Controller
                 $path = $file->store('images/products', 'public');
                 ProductImage::query()->create([
                     'product_id' => $product->id,
-                    'path'       => $path,
-                    'alt_text'   => $product->name,
+                    'path' => $path,
+                    'alt_text' => $product->name,
                     'is_primary' => $existingCount === 0 && $index === 0,
                     'sort_order' => $existingCount + $index,
                 ]);
@@ -113,8 +169,8 @@ class ProductController extends Controller
                 $path = $this->mediaUrlToPath($url);
                 ProductImage::query()->create([
                     'product_id' => $product->id,
-                    'path'       => $path,
-                    'alt_text'   => $product->name,
+                    'path' => $path,
+                    'alt_text' => $product->name,
                     'is_primary' => ($existingCount === 0 && $fileCount === 0 && $index === 0),
                     'sort_order' => $existingCount + $fileCount + $index,
                 ]);

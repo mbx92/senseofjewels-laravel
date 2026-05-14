@@ -9,7 +9,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MediaController extends Controller
 {
@@ -17,28 +18,43 @@ class MediaController extends Controller
         'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
     ];
 
-    private const MAX_SIZE_BYTES = 4 * 1024 * 1024; // 4 MB
+    private const MAX_SIZE_BYTES = 4 * 1024 * 1024;
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $media = Media::query()
             ->when($request->filled('collection'), fn ($q) => $q->where('collection', $request->collection))
             ->when($request->filled('search'), fn ($q) => $q->where(function ($inner) use ($request) {
                 $inner->where('original_name', 'like', "%{$request->search}%")
-                      ->orWhere('alt', 'like', "%{$request->search}%");
+                    ->orWhere('alt', 'like', "%{$request->search}%");
             }))
             ->latest()
             ->paginate(36)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Media $m) => [
+                'id' => $m->id,
+                'url' => $m->url,
+                'path' => $m->path,
+                'original_name' => $m->original_name,
+                'alt' => $m->alt,
+                'title' => $m->title,
+                'human_size' => $m->human_size,
+                'is_image' => $m->isImage(),
+                'collection' => $m->collection,
+            ]);
 
         $collections = Media::query()->select('collection')->distinct()->pluck('collection');
 
-        return view('admin.media.index', compact('media', 'collections'));
+        return Inertia::render('Admin/Media/Index', [
+            'media' => $media,
+            'collections' => $collections->values()->all(),
+            'filters' => [
+                'search' => $request->string('search')->toString() ?: null,
+                'collection' => $request->string('collection')->toString() ?: null,
+            ],
+        ]);
     }
 
-    /**
-     * Return JSON list for the media picker modal (AJAX).
-     */
     public function json(Request $request): JsonResponse
     {
         $items = Media::query()
@@ -47,12 +63,12 @@ class MediaController extends Controller
             ->limit(100)
             ->get()
             ->map(fn (Media $m) => [
-                'id'            => $m->id,
-                'url'           => $this->relativeUrl($m->url),
+                'id' => $m->id,
+                'url' => $this->relativeUrl($m->url),
                 'original_name' => $m->original_name,
-                'alt'           => $m->alt,
-                'human_size'    => $m->human_size,
-                'is_image'      => $m->isImage(),
+                'alt' => $m->alt,
+                'human_size' => $m->human_size,
+                'is_image' => $m->isImage(),
             ]);
 
         return response()->json($items);
@@ -61,15 +77,14 @@ class MediaController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'files'              => ['required', 'array', 'max:20'],
-            'files.*'            => ['required', 'file', 'max:4096'],
-            'collection'         => ['nullable', 'string', 'max:50'],
+            'files' => ['required', 'array', 'max:20'],
+            'files.*' => ['required', 'file', 'max:4096'],
+            'collection' => ['nullable', 'string', 'max:50'],
         ]);
 
         $collection = $request->input('collection', 'general');
 
         foreach ($request->file('files') as $file) {
-            // Validate mime manually (stricter than just mimes: rule)
             if (! in_array($file->getMimeType(), self::ALLOWED_MIMES, true)) {
                 continue;
             }
@@ -77,19 +92,19 @@ class MediaController extends Controller
                 continue;
             }
 
-            $slug      = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-            $ext       = strtolower($file->getClientOriginalExtension());
-            $filename  = $slug . '-' . Str::random(8) . '.' . $ext;
-            $path      = $file->storeAs("media/{$collection}", $filename, 'public');
+            $slug = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+            $ext = strtolower($file->getClientOriginalExtension());
+            $filename = $slug.'-'.Str::random(8).'.'.$ext;
+            $path = $file->storeAs("media/{$collection}", $filename, 'public');
 
             Media::create([
-                'disk'          => 'public',
-                'path'          => $path,
-                'filename'      => $filename,
+                'disk' => 'public',
+                'path' => $path,
+                'filename' => $filename,
                 'original_name' => $file->getClientOriginalName(),
-                'mime_type'     => $file->getMimeType(),
-                'size'          => $file->getSize(),
-                'collection'    => $collection,
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'collection' => $collection,
             ]);
         }
 
@@ -100,7 +115,7 @@ class MediaController extends Controller
     public function update(Request $request, Media $medium): RedirectResponse
     {
         $validated = $request->validate([
-            'alt'   => ['nullable', 'string', 'max:255'],
+            'alt' => ['nullable', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
         ]);
 

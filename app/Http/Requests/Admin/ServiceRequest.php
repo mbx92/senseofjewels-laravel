@@ -14,14 +14,15 @@ class ServiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'       => ['required', 'string', 'max:255'],
-            'icon'        => ['nullable', 'string', 'max:100'],
-            'summary'     => ['nullable', 'string', 'max:500'],
+            'title' => ['required', 'string', 'max:255'],
+            'icon' => ['nullable', 'string', 'max:100'],
+            'summary' => ['nullable', 'string', 'max:500'],
             'description' => ['nullable', 'string'],
-            'image'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'sort_order'  => ['nullable', 'integer', 'min:0'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:2048'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
             'is_featured' => ['boolean'],
-            'is_active'   => ['boolean'],
+            'is_active' => ['boolean'],
         ];
     }
 }
