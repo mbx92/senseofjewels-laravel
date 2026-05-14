@@ -41,6 +41,9 @@ class HandleInertiaRequests extends Middleware
             'csrf' => csrf_token(),
             'auth' => [
                 'user' => $request->user(),
+                'can' => [
+                    'manage_users' => $request->user()?->can('manage users') ?? false,
+                ],
             ],
             'locale' => app()->getLocale(),
             'currency' => session('currency', 'IDR'),
@@ -48,6 +51,7 @@ class HandleInertiaRequests extends Middleware
                 'cart_added' => $request->session()->get('cart_added'),
                 'status' => $request->session()->get('status'),
                 'error' => $request->session()->get('error'),
+                'success' => $request->session()->get('success'),
             ],
             'themeColors' => AppLayoutShared::themeColors(),
             'layoutStrings' => AppLayoutShared::publicLayoutStrings(),

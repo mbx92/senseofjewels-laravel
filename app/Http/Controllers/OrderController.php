@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\CurrencyService;
+use App\Support\PublicOrderResource;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, CurrencyService $currency): Response
     {
         $orders = Order::query()
             ->where('user_id', $request->user()->id)
@@ -16,10 +19,12 @@ class OrderController extends Controller
             ->latest('placed_at')
             ->paginate(10);
 
-        return view('orders.index', compact('orders'));
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders->through(fn (Order $order) => PublicOrderResource::tableRow($order, $currency)),
+        ]);
     }
 
-    public function show(Request $request, string $orderNumber): View
+    public function show(Request $request, string $orderNumber, CurrencyService $currency): Response
     {
         $order = Order::query()
             ->where('order_number', $orderNumber)
@@ -27,6 +32,6 @@ class OrderController extends Controller
             ->with(['items.product', 'payment', 'voucher'])
             ->firstOrFail();
 
-        return view('orders.show', compact('order'));
+        return Inertia::render('Orders/Show', PublicOrderResource::forOrderShow($order, $currency));
     }
 }

@@ -3,13 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Payment;
 use App\Models\Setting;
+use App\Services\CurrencyService;
 use App\Services\MidtransService;
+use App\Support\PublicOrderResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PaymentController extends Controller
 {
@@ -26,6 +28,7 @@ class PaymentController extends Controller
     private function midtransActive(): bool
     {
         $enabled = Setting::boolOf('midtrans_enabled', true);
+
         return $enabled && $this->midtransConfigured();
     }
 
@@ -33,7 +36,7 @@ class PaymentController extends Controller
      * GET /payment/{orderNumber}
      * Tampilkan halaman pembayaran Snap atau simulator lokal.
      */
-    public function show(Request $request, string $orderNumber): View|RedirectResponse
+    public function show(Request $request, string $orderNumber, CurrencyService $currency): Response|RedirectResponse
     {
         $order = Order::query()
             ->where('order_number', $orderNumber)
@@ -51,10 +54,10 @@ class PaymentController extends Controller
 
         // Manual payment fallback (integration OFF / config missing)
         if (! $this->midtransActive()) {
-            return view('payment.manual', compact('order'));
+            return Inertia::render('Payment/Manual', PublicOrderResource::forManualPayment($order, $currency));
         }
 
-        return view('payment.show', compact('order'));
+        return Inertia::render('Payment/Show', PublicOrderResource::forPaymentPage($order, $currency));
     }
 
     /**
@@ -88,6 +91,7 @@ class PaymentController extends Controller
             $token = $this->midtrans->createSnapToken($order);
         } catch (\Throwable $e) {
             report($e);
+
             return response()->json(['error' => 'Gagal membuat token pembayaran.'], 500);
         }
 
@@ -110,6 +114,7 @@ class PaymentController extends Controller
             $this->midtrans->handleWebhook($payload);
         } catch (\Throwable $e) {
             report($e);
+
             return response()->json(['message' => 'Error processing notification.'], 500);
         }
 
@@ -119,28 +124,40 @@ class PaymentController extends Controller
     /**
      * GET /payment/success
      */
-    public function success(Request $request): View
+    public function success(Request $request, CurrencyService $currency): Response
     {
         $order = $this->resolveOrderFromRequest($request);
-        return view('payment.success', compact('order'));
+
+        return Inertia::render(
+            'Payment/Status',
+            PublicOrderResource::forPaymentStatus($order, $currency, 'success')
+        );
     }
 
     /**
      * GET /payment/pending
      */
-    public function pending(Request $request): View
+    public function pending(Request $request, CurrencyService $currency): Response
     {
         $order = $this->resolveOrderFromRequest($request);
-        return view('payment.pending', compact('order'));
+
+        return Inertia::render(
+            'Payment/Status',
+            PublicOrderResource::forPaymentStatus($order, $currency, 'pending')
+        );
     }
 
     /**
      * GET /payment/failed
      */
-    public function failed(Request $request): View
+    public function failed(Request $request, CurrencyService $currency): Response
     {
         $order = $this->resolveOrderFromRequest($request);
-        return view('payment.failed', compact('order'));
+
+        return Inertia::render(
+            'Payment/Status',
+            PublicOrderResource::forPaymentStatus($order, $currency, 'failed')
+        );
     }
 
     // ---------------------------------------------------------------

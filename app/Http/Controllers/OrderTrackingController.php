@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\CurrencyService;
+use App\Support\PublicOrderResource;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderTrackingController extends Controller
 {
-    public function show(Request $request, string $orderNumber): View
+    public function show(Request $request, string $orderNumber, CurrencyService $currency): Response
     {
         $order = Order::query()
             ->with(['items.product', 'payment'])
@@ -19,6 +22,14 @@ class OrderTrackingController extends Controller
             )
             ->firstOrFail();
 
-        return view('orders.track', compact('order'));
+        return Inertia::render(
+            'Orders/Track',
+            PublicOrderResource::forTracking(
+                $order,
+                $currency,
+                ! $request->user(),
+                $request->get('email'),
+            )
+        );
     }
 }

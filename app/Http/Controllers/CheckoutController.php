@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Models\Payment;
 use App\Models\Setting;
 use App\Models\Voucher;
 use App\Services\CartService;
+use App\Services\CurrencyService;
 use App\Services\DiscountService;
 use App\Services\OrderService;
+use App\Support\CheckoutPresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CheckoutController extends Controller
 {
     public function __construct(
-        protected CartService     $cartService,
-        protected OrderService    $orderService,
+        protected CartService $cartService,
+        protected OrderService $orderService,
         protected DiscountService $discountService,
     ) {}
 
@@ -30,7 +32,7 @@ class CheckoutController extends Controller
         return $enabled && $configured;
     }
 
-    public function index(Request $request): View|RedirectResponse
+    public function index(Request $request, CurrencyService $currency): Response|RedirectResponse
     {
         if (! Setting::cartEnabled()) {
             return redirect()->route('shop.index')
@@ -44,7 +46,10 @@ class CheckoutController extends Controller
                 ->with('error', 'Keranjang Anda kosong.');
         }
 
-        return view('checkout.index', compact('cart'));
+        return Inertia::render(
+            'Checkout/Index',
+            CheckoutPresenter::index($request, $cart, $currency, $request->user(), $this->midtransActive())
+        );
     }
 
     public function applyVoucher(Request $request): JsonResponse
@@ -55,7 +60,7 @@ class CheckoutController extends Controller
 
         $request->validate(['code' => ['required', 'string']]);
 
-        $cart   = $this->cartService->getCart();
+        $cart = $this->cartService->getCart();
         $result = $this->discountService->validateVoucher(
             $request->code,
             $request->user()?->id,
@@ -69,12 +74,12 @@ class CheckoutController extends Controller
         session(['checkout_voucher_id' => $result['voucher']->id]);
 
         return response()->json([
-            'valid'           => true,
-            'message'         => $result['message'],
+            'valid' => true,
+            'message' => $result['message'],
             'discount_amount' => $result['discount_amount'],
-            'discount_fmt'    => 'Rp ' . number_format($result['discount_amount'], 0, ',', '.'),
-            'total'           => $cart->subtotal - $result['discount_amount'],
-            'total_fmt'       => 'Rp ' . number_format($cart->subtotal - $result['discount_amount'], 0, ',', '.'),
+            'discount_fmt' => 'Rp '.number_format($result['discount_amount'], 0, ',', '.'),
+            'total' => $cart->subtotal - $result['discount_amount'],
+            'total_fmt' => 'Rp '.number_format($cart->subtotal - $result['discount_amount'], 0, ',', '.'),
         ]);
     }
 
@@ -86,16 +91,16 @@ class CheckoutController extends Controller
         }
 
         $validated = $request->validate([
-            'customer_name'                => ['required', 'string', 'max:255'],
-            'customer_email'               => ['required', 'email', 'max:255'],
-            'customer_phone'               => ['nullable', 'string', 'max:50'],
-            'shipping_address.line_1'      => ['required', 'string', 'max:255'],
-            'shipping_address.city'        => ['required', 'string', 'max:255'],
-            'shipping_address.province'    => ['required', 'string', 'max:255'],
+            'customer_name' => ['required', 'string', 'max:255'],
+            'customer_email' => ['required', 'email', 'max:255'],
+            'customer_phone' => ['nullable', 'string', 'max:50'],
+            'shipping_address.line_1' => ['required', 'string', 'max:255'],
+            'shipping_address.city' => ['required', 'string', 'max:255'],
+            'shipping_address.province' => ['required', 'string', 'max:255'],
             'shipping_address.postal_code' => ['required', 'string', 'max:20'],
-            'shipping_address.country'     => ['nullable', 'string', 'max:100'],
-            'voucher_code'                 => ['nullable', 'string', 'max:50'],
-            'notes'                        => ['nullable', 'string'],
+            'shipping_address.country' => ['nullable', 'string', 'max:100'],
+            'voucher_code' => ['nullable', 'string', 'max:50'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         $cart = $this->cartService->getCart();
@@ -133,7 +138,7 @@ class CheckoutController extends Controller
             userId: $request->user()?->id,
             cart: $cart,
             customerData: [
-                'name'  => $validated['customer_name'],
+                'name' => $validated['customer_name'],
                 'email' => $validated['customer_email'],
                 'phone' => $validated['customer_phone'] ?? null,
                 'notes' => $validated['notes'] ?? null,
@@ -148,10 +153,10 @@ class CheckoutController extends Controller
             ['order_id' => $order->id],
             [
                 'provider' => $paymentProvider,
-                'amount'   => $order->total,
+                'amount' => $order->total,
                 'currency' => $order->currency ?? 'IDR',
-                'status'   => 'pending',
-                'payload'  => [],
+                'status' => 'pending',
+                'payload' => [],
             ],
         );
 

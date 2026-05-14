@@ -13,10 +13,10 @@ import { route } from 'ziggy-js';
                 <div class="card-body gap-4">
                     <h1 class="display-font text-3xl text-base-content">Inertia + Vue</h1>
                     <p class="text-sm text-base-content/60">
-                        Halaman percobaan stack. Beranda, toko, dan keranjang sudah Inertia + Vue; checkout, pembayaran, dan admin masih Blade.
+                        Toko pelanggan, checkout, pembayaran, pesanan, akun, profil, dan auth sudah Inertia + Vue. Dashboard admin sudah Inertia; modul CMS lain (produk, kategori, dll.) masih Blade — navigasi ke sana memuat ulang halaman penuh dengan layout admin lama.
                     </p>
                     <div class="flex flex-wrap gap-2">
-                        <Link :href="route('home')" class="btn btn-primary">Ke beranda (Blade)</Link>
+                        <Link :href="route('home')" class="btn btn-primary">Ke beranda</Link>
                         <Link :href="route('inertia.pilot')" class="btn btn-outline btn-sm">Muat ulang pilot</Link>
                     </div>
                 </div>

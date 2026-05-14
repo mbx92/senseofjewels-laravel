@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): View
+    public function index(): Response
     {
         $todayRevenue = Order::query()
             ->whereDate('created_at', today())
@@ -40,15 +41,20 @@ class DashboardController extends Controller
 
         $recentOrders = Order::query()->latest()->take(5)->get();
 
-        return view('admin.dashboard', compact(
-            'todayRevenue',
-            'todayOrders',
-            'totalOrders',
-            'pendingOrders',
-            'totalProducts',
-            'lowStockCount',
-            'totalCustomers',
-            'recentOrders',
-        ));
+        return Inertia::render('Admin/Dashboard', [
+            'today_revenue_formatted' => 'Rp '.number_format((int) $todayRevenue, 0, ',', '.'),
+            'today_orders' => $todayOrders,
+            'total_orders' => $totalOrders,
+            'pending_orders' => $pendingOrders,
+            'total_products' => $totalProducts,
+            'low_stock_count' => $lowStockCount,
+            'total_customers' => $totalCustomers,
+            'recent_orders' => $recentOrders->map(fn (Order $order) => [
+                'order_number' => $order->order_number,
+                'customer_name' => $order->customer_name,
+                'status' => $order->status,
+                'total_formatted' => 'Rp '.number_format((int) $order->total, 0, ',', '.'),
+            ])->values()->all(),
+        ]);
     }
 }

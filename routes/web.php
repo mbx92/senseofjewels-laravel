@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DiscountController as AdminDiscountController;
@@ -27,7 +28,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
-use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -71,18 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{orderNumber}/invoice', [InvoiceController::class, 'download'])->name('orders.invoice');
 
     // Account area
-    Route::get('/account/tracking', function () {
-        $orders = Order::where('user_id', auth()->id())
-            ->orderByDesc('created_at')
-            ->take(20)
-            ->get();
+    Route::get('/account/tracking', [AccountController::class, 'tracking'])->name('account.tracking');
 
-        return view('account.tracking', compact('orders'));
-    })->name('account.tracking');
-
-    Route::get('/account/reviews', function () {
-        return view('account.reviews');
-    })->name('account.reviews');
+    Route::get('/account/reviews', [AccountController::class, 'reviews'])->name('account.reviews');
 });
 
 Route::match(['get', 'post'], '/orders/{orderNumber}/tracking', [OrderTrackingController::class, 'show'])
