@@ -29,6 +29,9 @@ watch([search, collection], () => {
 
 const uploadCollection = ref('general');
 const fileInput = ref(null);
+const dropzoneRef = ref(null);
+const isDragging = ref(false);
+const uploadCount = ref(0);
 
 function onPickFiles() {
     fileInput.value?.click();
@@ -37,16 +40,40 @@ function onPickFiles() {
 function onFilesChange(e) {
     const files = e.target.files;
     if (!files?.length) return;
+    uploadFiles(files);
+}
+
+function onDrop(e) {
+    isDragging.value = false;
+    const files = e.dataTransfer?.files;
+    if (!files?.length) return;
+    uploadFiles(files);
+}
+
+function onDragOver(e) {
+    e.preventDefault();
+    isDragging.value = true;
+}
+
+function onDragLeave(e) {
+    if (dropzoneRef.value && !dropzoneRef.value.contains(e.relatedTarget)) {
+        isDragging.value = false;
+    }
+}
+
+function uploadFiles(files) {
     const fd = new FormData();
     fd.append('collection', uploadCollection.value || 'general');
     for (let i = 0; i < files.length; i++) {
         fd.append('files[]', files[i]);
     }
+    uploadCount.value = files.length;
     router.post(route('admin.media.store'), fd, {
         preserveScroll: true,
         forceFormData: true,
         onFinish: () => {
             if (fileInput.value) fileInput.value.value = '';
+            uploadCount.value = 0;
         },
     });
 }
@@ -91,14 +118,45 @@ function destroyItem() {
                     <p class="text-sm text-base-content/60">Upload dan kelola aset publik.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <input ref="fileInput" type="file" class="hidden" multiple accept="image/*" @change="onFilesChange" />
                     <select v-model="uploadCollection" class="select select-bordered select-sm">
                         <option value="general">general</option>
                         <option v-for="c in collections" :key="c" :value="c">{{ c }}</option>
                     </select>
-                    <button type="button" class="btn btn-primary btn-sm" @click="onPickFiles">Upload</button>
                 </div>
             </div>
+
+            <div
+                ref="dropzoneRef"
+                class="relative flex flex-col items-center justify-center rounded-box border-2 border-dashed px-6 py-10 transition-colors"
+                :class="isDragging ? 'border-primary bg-primary/5' : 'border-base-300 bg-base-100 hover:border-base-content/30'"
+                @dragover.prevent="onDragOver"
+                @dragleave="onDragLeave"
+                @drop.prevent="onDrop"
+            >
+                <input ref="fileInput" type="file" class="hidden" multiple accept="image/*" @change="onFilesChange" />
+
+                <template v-if="isDragging">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-primary mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    <p class="text-sm font-medium text-primary">Lepaskan file di sini</p>
+                </template>
+                <template v-else-if="uploadCount > 0">
+                    <span class="loading loading-spinner loading-md text-primary mb-3" />
+                    <p class="text-sm text-base-content/70">Mengupload {{ uploadCount }} file…</p>
+                </template>
+                <template v-else>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-base-content/30 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-sm text-base-content/50">
+                        Seret &amp; lepas file ke sini, atau
+                        <button type="button" class="link link-primary" @click="onPickFiles">pilih file</button>
+                    </p>
+                    <p class="text-[10px] text-base-content/30 mt-1">Gambar JPEG, PNG, WebP, GIF, SVG — maks 4 MB</p>
+                </template>
+            </div>
+
             <div class="flex flex-wrap gap-2">
                 <input v-model="search" type="search" placeholder="Cari nama / alt…" class="input input-bordered input-sm w-full max-w-xs" />
                 <select v-model="collection" class="select select-bordered select-sm">
@@ -139,37 +197,47 @@ function destroyItem() {
             </div>
         </div>
 
-        <dialog class="modal" :class="{ 'modal-open': !!editing }">
-            <div class="modal-box max-w-md">
-                <h3 class="font-bold text-lg">Edit meta</h3>
-                <form class="mt-4 space-y-3" @submit.prevent="saveMeta">
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Alt</legend>
-                        <input v-model="metaForm.alt" type="text" class="input input-bordered w-full" />
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Title</legend>
-                        <input v-model="metaForm.title" type="text" class="input input-bordered w-full" />
-                    </fieldset>
-                    <div class="modal-action">
-                        <button type="button" class="btn" @click="editing = null">Tutup</button>
-                        <button type="submit" class="btn btn-primary" :disabled="metaForm.processing">Simpan</button>
-                    </div>
-                </form>
-            </div>
-            <form method="dialog" class="modal-backdrop" @click="editing = null"><button>close</button></form>
-        </dialog>
-
-        <dialog class="modal" :class="{ 'modal-open': !!del }">
-            <div class="modal-box">
-                <h3 class="font-bold text-lg">Hapus media?</h3>
-                <p class="py-2 text-sm">File di storage akan dihapus.</p>
-                <div class="modal-action">
-                    <button type="button" class="btn" @click="del = null">Batal</button>
-                    <button type="button" class="btn btn-error" @click="destroyItem">Hapus</button>
+        <Teleport to="body">
+            <div
+                v-if="editing"
+                class="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/45 p-4"
+                @click.self="editing = null"
+                @keydown.escape.window="editing = null"
+            >
+                <div class="w-full max-w-md rounded-box border border-base-300 bg-base-100 p-6 shadow-2xl">
+                    <h3 class="font-bold text-lg">Edit meta</h3>
+                    <form class="mt-4 space-y-3" @submit.prevent="saveMeta">
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Alt</legend>
+                            <input v-model="metaForm.alt" type="text" class="input input-bordered w-full" />
+                        </fieldset>
+                        <fieldset class="fieldset">
+                            <legend class="fieldset-legend">Title</legend>
+                            <input v-model="metaForm.title" type="text" class="input input-bordered w-full" />
+                        </fieldset>
+                        <div class="mt-6 flex items-center justify-end gap-3">
+                            <button type="button" class="btn btn-ghost" @click="editing = null">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="metaForm.processing">Simpan</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            <form method="dialog" class="modal-backdrop" @click="del = null"><button>close</button></form>
-        </dialog>
+
+            <div
+                v-if="del"
+                class="fixed inset-0 z-[2147483647] flex items-center justify-center bg-black/45 p-4"
+                @click.self="del = null"
+                @keydown.escape.window="del = null"
+            >
+                <div class="w-full max-w-md rounded-box border border-base-300 bg-base-100 p-6 shadow-2xl">
+                    <h3 class="font-bold text-lg">Hapus media?</h3>
+                    <p class="mt-2 text-sm">File di storage akan dihapus.</p>
+                    <div class="mt-6 flex items-center justify-end gap-3">
+                        <button type="button" class="btn btn-ghost" @click="del = null">Batal</button>
+                        <button type="button" class="btn btn-error" @click="destroyItem">Hapus</button>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </AdminLayout>
 </template>
